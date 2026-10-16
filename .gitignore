@@ -1,0 +1,12 @@
+.DS_Store
+Thumbs.db
+
+# Never commit writing data if a test folder ends up here
+*/稿件/
+*/筆記/
+遺珠.md
+.稿紙.json
+.稿紙設定.json
+
+# Local Claude Code settings
+.claude/settings.local.json

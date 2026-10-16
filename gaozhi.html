@@ -1,0 +1,1562 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>稿紙</title>
+<meta name="theme-color" content="#efebe3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#efebe3; --paper:#fbf9f4; --ink:#2b2824; --muted:#8c857a; --line:#e0d9cc;
+  --accent:#9b3b2a; --side:#e9e4d9; --hover:#ddd6c8;
+  --serif:"Noto Serif TC","Source Han Serif TC","Songti TC","PMingLiU","MingLiU",serif;
+  --sans:"Noto Sans TC","Source Han Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --fs:20px; --mark:rgba(232,176,48,.34); color-scheme:light;
+}
+/* ── 配色 ── */
+@media (prefers-color-scheme:dark){:root:not([data-theme]){
+  --bg:#1b1a18; --paper:#22211e; --ink:#e4dfd4; --muted:#8f887c; --line:#36332e;
+  --accent:#d98466; --side:#191816; --hover:#2d2b27; --mark:rgba(214,160,60,.32); color-scheme:dark;
+}}
+:root[data-theme=night]{
+  --bg:#1b1a18; --paper:#22211e; --ink:#e4dfd4; --muted:#8f887c; --line:#36332e;
+  --accent:#d98466; --side:#191816; --hover:#2d2b27; --mark:rgba(214,160,60,.32); color-scheme:dark;
+}
+:root[data-theme=sepia]{
+  --bg:#e6d9c1; --paper:#f3e8d2; --ink:#3b2f22; --muted:#8a7558; --line:#d6c4a3;
+  --accent:#8c3b1f; --side:#e0d1b5; --hover:#d4c2a0; --mark:rgba(214,130,30,.30);
+}
+:root[data-theme=bamboo]{
+  --bg:#dde5da; --paper:#eef2ea; --ink:#26302a; --muted:#728179; --line:#cad6c7;
+  --accent:#3d6b4f; --side:#d4ded1; --hover:#c6d3c3; --mark:rgba(222,170,40,.36);
+}
+:root[data-theme=mist]{
+  --bg:#e2e6eb; --paper:#f6f8fa; --ink:#23282f; --muted:#7a8390; --line:#d2d8e0;
+  --accent:#3a5f8f; --side:#dae0e7; --hover:#ccd4de; --mark:rgba(240,186,50,.40);
+}
+:root[data-theme=deep]{
+  --bg:#141a21; --paper:#1a2129; --ink:#d8dee6; --muted:#7d8997; --line:#2b3440;
+  --accent:#86acd9; --side:#11161d; --hover:#243040; --mark:rgba(134,172,217,.30); color-scheme:dark;
+}
+:root[data-theme=black]{
+  --bg:#000; --paper:#0b0b0b; --ink:#e6e6e6; --muted:#878787; --line:#262626;
+  --accent:#e0a050; --side:#050505; --hover:#1c1c1c; --mark:rgba(224,160,80,.30); color-scheme:dark;
+}
+::highlight(gz-words){background-color:var(--mark)}
+::highlight(gz-words-b){background-color:color-mix(in srgb,var(--mark),var(--accent) 22%)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px}
+button{font:inherit;color:inherit;background:none;border:1px solid transparent;border-radius:6px;padding:3px 8px;cursor:pointer}
+button:hover{background:var(--hover)}
+[hidden]{display:none!important}
+
+#app{display:grid;grid-template-columns:250px 1fr;height:100vh}
+body.focus #app{grid-template-columns:0 1fr}
+body.focus #side{visibility:hidden}
+
+/* ── 側欄 ── */
+#side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 8px;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:.2em}
+.row{display:flex;gap:4px;padding:0 10px}
+#bookSel{flex:1;min-width:0;font:inherit;color:inherit;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+#bookStat{padding:8px 14px 2px;color:var(--muted);font-size:12px;line-height:1.6}
+#bookStat b{color:var(--ink);font-weight:500}
+.bookActions{padding:0 10px 6px}
+.bookActions button{font-size:12px;color:var(--muted)}
+.sect{padding:6px 6px 0;min-height:0}
+.sect.grow{flex:1;overflow:auto}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;color:var(--muted);font-size:12px;letter-spacing:.15em}
+.sh button{padding:0 6px;font-size:15px;line-height:1.4}
+ul{list-style:none;margin:0;padding:0}
+.files{max-height:28vh;overflow:auto}
+.files li,#outline li{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:6px;cursor:pointer}
+.files li:hover,#outline li:hover{background:var(--hover)}
+.files li.on{background:var(--hover);color:var(--accent);font-weight:500}
+.files .n,#outline .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files .a{display:none;gap:0}
+.files li:hover .a{display:flex}
+.files .a button{padding:0 4px;font-size:12px;color:var(--muted)}
+li.none{color:var(--muted);font-size:12px;cursor:default!important}
+li.none:hover{background:none!important}
+#outline li{font-family:var(--serif)}
+#outline li.on{color:var(--accent)}
+#outline .c{color:var(--muted);font-size:11px;font-family:var(--sans)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.foot span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── 主區 ── */
+main{display:flex;flex-direction:column;min-width:0;min-height:0}
+#bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+#docTitle{font-family:var(--serif);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:30ch}
+#docTitle .k{font-family:var(--sans);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-right:6px}
+#punct{display:flex;flex-wrap:nowrap;gap:0;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;justify-content:safe center}
+#punct button{font-family:var(--serif);font-size:15px;padding:1px 4px;min-width:26px;flex:none}
+.tools{display:flex;align-items:center;gap:4px}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;padding:1px}
+.seg button{border-radius:5px;padding:2px 10px}
+.seg button.on,.tools button.on{background:var(--ink);color:var(--paper)}
+
+#scroller{flex:1;min-height:0;overflow:auto;background:var(--paper)}
+body.v #scroller{writing-mode:vertical-rl}
+.editor{
+  max-inline-size:36em;margin-inline:auto;padding-block:10vh 45vh;padding-inline:2em;
+  outline:none;font-family:var(--serif);font-size:var(--fs);line-height:1.95;letter-spacing:.04em;
+  color:var(--ink);line-break:strict;overflow-wrap:anywhere;caret-color:var(--accent);
+}
+body.v .editor{padding-block:6vw 40vw;padding-inline:2.5em;max-inline-size:40em}
+body.sans .editor,body.sans #notes{font-family:var(--sans)}
+.editor p{margin:0;text-indent:2em}
+body.noindent .editor p{text-indent:0}
+.editor h1{font-size:1.3em;font-weight:600;letter-spacing:.12em;margin-block:2.4em 1.3em;text-indent:0}
+.editor h1:first-child{margin-block-start:0}
+.editor .sec{margin-block:1.1em;text-align:center;color:var(--muted);user-select:none;text-indent:0;letter-spacing:0}
+.editor .sec::before{content:"◇　◇　◇"}
+.editor.blank p:first-child::before{content:"開始書寫……（在開頭按 Enter 可先加章名）";color:var(--muted)}
+
+#notes{flex:1;min-height:0;border:0;resize:none;outline:none;background:var(--paper);color:var(--ink);
+  font-family:var(--serif);font-size:var(--fs);line-height:1.95;letter-spacing:.03em;
+  padding:8vh max(2em,calc((100% - 36em)/2))}
+body.v #notes{writing-mode:vertical-rl;padding:3em}
+
+#empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--paper);color:var(--muted);font-family:var(--serif);font-size:16px}
+#empty button{border-color:var(--line);font-family:var(--sans);font-size:14px;padding:6px 16px}
+
+#status{display:flex;gap:18px;flex-wrap:wrap;padding:6px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);background:var(--bg)}
+#status b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+#saveState{margin-left:auto}
+
+/* ── 歡迎 ── */
+#welcome{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
+.card{max-width:440px;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:32px;display:flex;flex-direction:column;gap:10px}
+.card h1{margin:0;font-family:var(--serif);letter-spacing:.3em;font-size:30px}
+.card .sub{margin:0 0 6px;color:var(--muted)}
+.card p{line-height:1.8;margin:0}
+.card button{border:1px solid var(--line);padding:9px;font-size:15px}
+.card button.primary{background:var(--ink);color:var(--paper)}
+.card .note{color:var(--accent);font-size:13px}
+.card .keys{margin-top:8px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.9}
+kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;font-size:12px}
+
+#side .files .c{color:var(--muted);font-size:11px;font-weight:400}
+#cntToday{cursor:pointer}
+.editor .flash{background:color-mix(in srgb,var(--accent) 16%,transparent);transition:background .8s}
+
+/* ── 遺珠／統計面板 ── */
+.panel{flex:1;min-height:0;overflow:auto;background:var(--paper);padding:5vh max(16px,calc((100% - 44em)/2)) 12vh}
+.panel h2{font-family:var(--serif);font-weight:600;letter-spacing:.2em;font-size:22px;margin:0 0 6px}
+.panel .hint{color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 20px}
+.btn{border:1px solid var(--line);padding:4px 12px}
+.addGem{margin-bottom:26px}
+.addGem textarea{width:100%;min-height:5.5em;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:15px/1.8 var(--serif);background:var(--paper);color:var(--ink);outline:none}
+.addGem textarea:focus{border-color:var(--muted)}
+.addGem .r{display:flex;justify-content:flex-end;margin-top:6px}
+.gem{border:1px solid var(--line);border-radius:10px;padding:12px 18px 14px;margin-bottom:14px;background:color-mix(in srgb,var(--bg) 45%,var(--paper))}
+.gem .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:8px}
+.gem .src{color:var(--accent);padding:0;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.gem .src:hover{background:none}
+.gem .acts{margin-left:auto;display:flex;gap:2px}
+.gem .acts button{font-size:12px;color:var(--muted);padding:1px 6px}
+.gem .body p{margin:0;font-family:var(--serif);font-size:16px;line-height:1.95;text-indent:2em}
+.none-msg{color:var(--muted);font-family:var(--serif);text-align:center;padding:40px 0}
+.big{display:flex;gap:34px;flex-wrap:wrap;margin:14px 0 12px}
+.big div{display:flex;flex-direction:column;gap:2px}
+.big b{font:500 30px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.big span{font-size:12px;color:var(--muted)}
+.prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:22px}
+.prog i{display:block;height:100%;background:var(--accent)}
+.ctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px;margin:6px 0 18px;color:var(--muted)}
+.ctl input{width:7em;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.ctl .seg button.on{background:var(--ink);color:var(--paper)}
+.chart{display:flex;align-items:flex-end;gap:3px;height:170px;border-bottom:1px solid var(--line);position:relative}
+.chart .bar{flex:1;background:var(--muted);opacity:.45;border-radius:3px 3px 0 0;min-height:1px}
+.chart .bar.met{opacity:.85;background:var(--ink)}
+.chart .bar.today{opacity:1;background:var(--accent)}
+.chart .goal{position:absolute;left:0;right:0;border-top:1px dashed var(--accent);pointer-events:none}
+.chart .goal span{position:absolute;right:0;top:-18px;font-size:11px;color:var(--accent)}
+.axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:4px 0 26px}
+.days{width:100%;border-collapse:collapse;font-size:14px}
+.days td{padding:6px 4px;border-bottom:1px solid var(--line)}
+.days td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.foot-note{color:var(--muted);font-size:12px;line-height:1.8;margin-top:22px}
+/* ── 配色選單 ── */
+.pop-wrap{position:relative}
+.pop{position:absolute;right:0;top:calc(100% + 6px);z-index:15;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.16);display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:230px}
+.pop button{display:flex;align-items:center;gap:8px;padding:6px 8px;text-align:left;white-space:nowrap}
+.pop button.on{background:var(--hover);color:var(--accent);font-weight:500}
+.sw{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid rgba(128,128,128,.35);display:inline-flex;align-items:center;justify-content:center}
+.sw b{width:8px;height:8px;border-radius:50%}
+
+/* ── 常用詞 ── */
+.panel h3{font-family:var(--serif);font-weight:600;letter-spacing:.15em;font-size:17px;margin:34px 0 4px}
+.chk{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink)}
+.chk input{width:auto;accent-color:var(--accent)}
+.addWord{display:flex;gap:6px;margin:0 0 14px}
+.addWord input{flex:1;min-width:0;font:15px var(--serif);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 10px;outline:none}
+.addWord input:focus{border-color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--bg) 45%,var(--paper))}
+.chip b{font:500 15px var(--serif);background:var(--mark);border-radius:3px;padding:0 2px}
+.chip .c{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip .c.hot{color:var(--accent);font-weight:500}
+.chip button{padding:0 5px;font-size:11px;color:var(--muted);border-radius:999px}
+.links{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px}
+.links button{font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.reps td:first-child{font:16px var(--serif)}
+.reps td:nth-child(2){color:var(--muted);font-variant-numeric:tabular-nums;width:6em}
+.reps td:last-child{text-align:right;white-space:nowrap}
+.reps button{font-size:12px;color:var(--muted)}
+.reps button.add{color:var(--accent)}
+#cntWords{cursor:pointer}
+
+#toast{position:fixed;bottom:46px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:8px;font-size:13px;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.18);max-width:calc(100% - 32px)}
+
+@media (max-width:760px){
+  #app{grid-template-columns:0 1fr} #side{visibility:hidden}
+  body.focus #app{grid-template-columns:230px 1fr} body.focus #side{visibility:visible}
+  #punct{order:3;flex-basis:100%}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="brand"><span>稿紙</span></div>
+    <div class="row"><select id="bookSel" title="選擇書籍"></select><button id="newBook" title="新增書籍">＋</button></div>
+    <div id="bookStat"></div>
+    <div class="bookActions"><button id="exportBook" title="把全部稿件合併成一個 Markdown 檔下載">匯出全書</button></div>
+    <div class="sect"><div class="sh"><span>稿件</span><button data-new="ms" title="新增稿件">＋</button></div><ul id="msList" class="files"></ul></div>
+    <div class="sect"><div class="sh"><span>筆記</span><button data-new="notes" title="新增筆記">＋</button></div><ul id="notesList" class="files"></ul></div>
+    <div class="sect"><div class="sh"><span>工具</span></div><ul class="files">
+      <li class="tool" data-kind="gems" id="toolGems" title="捨不得刪的段落"><span class="n">遺珠</span><span class="c" id="gemCount"></span></li>
+      <li class="tool" data-kind="stats" id="toolStats" title="每日寫作字數"><span class="n">每日字數</span><span class="c" id="todayMini"></span></li>
+      <li class="tool" data-kind="words" id="toolWords" title="容易重複使用的詞語"><span class="n">常用詞</span><span class="c" id="wordsMini"></span></li>
+    </ul></div>
+    <div class="sect grow"><div class="sh"><span>目錄</span></div><ul id="outline"></ul></div>
+    <div class="foot"><span id="storeName"></span><button id="switchStore">更換</button></div>
+  </aside>
+
+  <main>
+    <header id="bar">
+      <button id="focusBtn" title="隱藏／顯示側欄">☰</button>
+      <div id="docTitle"></div>
+      <div id="punct"></div>
+      <div class="tools">
+        <div class="seg"><button data-mode="h" title="橫排：由左至右">橫排</button><button data-mode="v" title="直排：由右至左">直排</button></div>
+        <button id="fontBtn" title="切換字體">明體</button>
+        <button id="fsDown" title="縮小字級">A−</button><button id="fsUp" title="放大字級">A＋</button>
+        <button id="indentBtn" title="段首縮排兩字">縮排</button>
+        <button id="hlBtn" title="標示常用詞">標示</button>
+        <button id="gemBtn" title="把選取文字或游標所在段落移到遺珠（Alt+J／⌥J）">送遺珠</button>
+        <button id="exportBtn" title="下載目前檔案">匯出</button>
+        <div class="pop-wrap"><button id="themeBtn" title="配色">配色</button><div id="themePop" class="pop" hidden></div></div>
+      </div>
+    </header>
+
+    <div id="scroller" hidden><div id="editor" class="editor" contenteditable="true" spellcheck="false"></div></div>
+    <textarea id="notes" hidden spellcheck="false" placeholder="寫下筆記……"></textarea>
+    <div id="gemsView" class="panel" hidden></div>
+    <div id="statsView" class="panel" hidden></div>
+    <div id="wordsView" class="panel" hidden></div>
+    <div id="empty"><div id="emptyMsg"></div><button id="emptyBtn"></button></div>
+
+    <footer id="status">
+      <span id="cntChapter"></span><span id="cntDoc"></span><span id="cntBook"></span><span id="cntToday" title="查看每日字數"></span><span id="cntSel"></span><span id="cntWords" title="查看常用詞"></span>
+      <span id="saveState"></span>
+    </footer>
+  </main>
+</div>
+
+<div id="toast" hidden></div>
+<div id="welcome" hidden>
+  <div class="card">
+    <h1>稿紙</h1>
+    <p class="sub">繁體中文寫作工具</p>
+    <p>書稿以 Markdown 存在你選擇的資料夾：每本書一個資料夾，內含「稿件」與「筆記」兩個子資料夾，以及收存刪節段落的「遺珠.md」。</p>
+    <button id="reconnect" class="primary" hidden></button>
+    <button id="pickDir" class="primary">選擇寫作資料夾</button>
+    <button id="useLocal">先在瀏覽器裡試用</button>
+    <button id="closeWelcome" hidden>取消</button>
+    <p class="note" id="fsNote"></p>
+    <div class="keys">
+      <kbd>Enter</kbd> 換段<br>
+      連按兩次 <kbd>Enter</kbd>：插入分節符 ◇　◇　◇<br>
+      連按三次 <kbd>Enter</kbd>：開新章<br>
+      在稿件最開頭的空行按 <kbd>Enter</kbd>：直接建立章名<br>
+      <kbd>Alt J</kbd>／<kbd>⌥J</kbd>：把段落或選取文字移到遺珠<br>
+      <kbd>Ctrl/⌘ S</kbd> 立即儲存（平時會自動儲存）
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const editor = $('#editor'), scroller = $('#scroller'), notesEl = $('#notes');
+const KINDS = { ms: '稿件', notes: '筆記' };
+const collator = new Intl.Collator('zh-Hant-TW', { numeric: true });
+const sortNames = a => a.sort(collator.compare);
+const baseName = f => f.replace(/\.(md|markdown|txt)$/i, '');
+const sanitize = s => (s || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/^\.+/, '').trim();
+const fmt = n => n.toLocaleString('zh-Hant-TW');
+const CFG = '.稿紙設定.json';
+
+const state = {
+  store: null, book: null, kind: null, file: null, dirty: false,
+  counts: {}, live: null, msFiles: [], curChap: null,
+  settings: { mode: 'h', font: 'serif', fs: 20, indent: true, metric: 'all', goal: 0, theme: 'auto', hl: true },
+  gems: [], meta: null,
+};
+let composing = false;
+
+/* ════════ 儲存層 ════════ */
+class FSStore {
+  constructor(root) { this.root = root; this.name = '資料夾：' + root.name; }
+  async books() {
+    const out = [];
+    for await (const [n, h] of this.root.entries()) if (h.kind === 'directory' && !n.startsWith('.')) out.push(n);
+    return sortNames(out);
+  }
+  async dir(book, kind) {
+    const b = await this.root.getDirectoryHandle(book);
+    if (kind === 'root') return b;                 // 書本資料夾本身（遺珠.md、.稿紙.json）
+    return b.getDirectoryHandle(KINDS[kind], { create: true });
+  }
+  async createBook(book) {
+    const b = await this.root.getDirectoryHandle(book, { create: true });
+    await b.getDirectoryHandle(KINDS.ms, { create: true });
+    await b.getDirectoryHandle(KINDS.notes, { create: true });
+  }
+  async list(book, kind) {
+    const d = await this.dir(book, kind), out = [];
+    for await (const [n, h] of d.entries()) if (h.kind === 'file' && /\.(md|markdown|txt)$/i.test(n)) out.push(n);
+    return sortNames(out);
+  }
+  async read(book, kind, f) { const h = await (await this.dir(book, kind)).getFileHandle(f); return (await h.getFile()).text(); }
+  async write(book, kind, f, text) {
+    const h = await (await this.dir(book, kind)).getFileHandle(f, { create: true });
+    const w = await h.createWritable(); await w.write(text); await w.close();
+  }
+  async exists(book, kind, f) { try { await (await this.dir(book, kind)).getFileHandle(f); return true; } catch { return false; } }
+  async stat(book, kind, f) {
+    try { const file = await (await (await this.dir(book, kind)).getFileHandle(f)).getFile(); return { m: file.lastModified, s: file.size }; }
+    catch { return null; }
+  }
+  async remove(book, kind, f) { await (await this.dir(book, kind)).removeEntry(f); }
+  async rename(book, kind, f, nf) { const t = await this.read(book, kind, f); await this.write(book, kind, nf, t); await this.remove(book, kind, f); }
+  // 寫作資料夾本身的設定檔（所有書共用，例如常用詞清單）
+  async readCfg() { try { return await (await (await this.root.getFileHandle(CFG)).getFile()).text(); } catch { return ''; } }
+  async writeCfg(text) { const w = await (await this.root.getFileHandle(CFG, { create: true })).createWritable(); await w.write(text); await w.close(); }
+}
+
+class LocalStore {
+  constructor() { this.key = 'gaozhi-local'; this.name = '瀏覽器儲存（試用）'; try { this.db = JSON.parse(localStorage.getItem(this.key)) || {}; } catch { this.db = {}; } }
+  persist() { localStorage.setItem(this.key, JSON.stringify(this.db)); }
+  async books() { return sortNames(Object.keys(this.db)); }
+  async createBook(b) { this.db[b] ??= { ms: {}, notes: {}, root: {} }; this.persist(); }
+  async list(b, k) { return sortNames(Object.keys(this.db[b]?.[k] || {})); }
+  async read(b, k, f) { return this.db[b]?.[k]?.[f] ?? ''; }
+  async write(b, k, f, t) { this.db[b] ??= { ms: {}, notes: {} }; this.db[b][k] ??= {}; this.db[b][k][f] = t; this.persist(); }
+  async exists(b, k, f) { return f in (this.db[b]?.[k] || {}); }
+  async remove(b, k, f) { delete this.db[b][k][f]; this.persist(); }
+  async rename(b, k, f, nf) { this.db[b][k][nf] = this.db[b][k][f]; delete this.db[b][k][f]; this.persist(); }
+  async readCfg() { return localStorage.getItem('gaozhi-local-cfg') || ''; }
+  async writeCfg(text) { localStorage.setItem('gaozhi-local-cfg', text); }
+}
+
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('gaozhi', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function kvGet(k) { const db = await idb(); return new Promise(res => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => res(undefined); }); }
+async function kvSet(k, v) { const db = await idb(); return new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = () => res(); }); }
+
+/* ════════ 字數 ════════ */
+const PUNCT = /[\p{P}\p{S}]/u, SPACE = /\s/u;
+function count(str) {
+  let all = 0, np = 0;
+  for (const ch of str) { if (SPACE.test(ch)) continue; all++; if (!PUNCT.test(ch)) np++; }
+  return { all, np };
+}
+
+/* ════════ Markdown ⇄ 編輯器 ════════ */
+const BREAK = /^\s*((\*\s*){3,}|(-\s*){3,}|(_\s*){3,}|([◇◆＊※☆★○●]\s*){3,})$/;
+const HEADING = /^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$/;
+
+function newP(text) { const p = document.createElement('p'); if (text) p.textContent = text; else p.innerHTML = '<br>'; return p; }
+function makeSec() { const d = document.createElement('div'); d.className = 'sec'; d.contentEditable = 'false'; return d; }
+function makeH(text) { const h = document.createElement('h1'); h.textContent = text; return h; }
+const unesc = l => l.replace(/^(\s*)\\(?=[#*\-_◇◆＊※☆★○●])/, '$1');
+
+function lineBlock(line) {
+  if (line.trim() === '') return null;
+  const m = line.match(HEADING);
+  if (m) return makeH(m[1]);
+  if (BREAK.test(line)) return makeSec();
+  return newP(unesc(line));
+}
+function load(md) {
+  editor.innerHTML = '';
+  for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) { const b = lineBlock(ln); if (b) editor.append(b); }
+  normalize();
+}
+function escLine(t) { return (/^\s*#/.test(t) || BREAK.test(t)) ? t.replace(/^(\s*)/, '$1\\') : t; }
+function serialize() {
+  const out = [];
+  for (const el of editor.children) {
+    if (el.tagName === 'H1') out.push('# ' + (el.textContent.trim() || '未命名章節'));
+    else if (el.classList.contains('sec')) { if (out.length && out[out.length - 1] !== '* * *') out.push('* * *'); }
+    else { const t = el.textContent; if (t.trim()) out.push(escLine(t)); }
+  }
+  return out.join('\n\n') + '\n';
+}
+function countMd(md) {
+  let all = 0, np = 0;
+  for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) {
+    if (!ln.trim() || HEADING.test(ln) || BREAK.test(ln)) continue;
+    const c = count(unesc(ln)); all += c.all; np += c.np;
+  }
+  return { all, np };
+}
+
+/* ════════ 游標工具 ════════ */
+function setSel(node, off) { const r = document.createRange(); r.setStart(node, off); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+function placeCaret(el, atEnd) {
+  if (!el) return;
+  if (el.classList?.contains('sec')) el = el.nextElementSibling || el.previousElementSibling;
+  const r = document.createRange(); r.selectNodeContents(el); r.collapse(!atEnd);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function currentBlock() {
+  const s = getSelection(); if (!s.rangeCount) return null;
+  let n = s.anchorNode; if (!n || !editor.contains(n)) return null;
+  if (n === editor) return editor.children[Math.min(s.anchorOffset, editor.children.length - 1)] || null;
+  while (n && n.parentNode !== editor) n = n.parentNode;
+  return n && n.nodeType === 1 ? n : null;
+}
+function getCaret() {
+  const s = getSelection(); const b = currentBlock(); if (!b) return null;
+  const bi = [...editor.children].indexOf(b);
+  if (s.anchorNode === editor) return { bi, off: 0 };
+  const r = document.createRange(); r.selectNodeContents(b); r.setEnd(s.anchorNode, s.anchorOffset);
+  return { bi, off: r.toString().length };
+}
+function setCaret(c) {
+  if (!c) { placeCaret(editor.lastElementChild, true); return; }
+  let b = editor.children[Math.min(c.bi, editor.children.length - 1)]; if (!b) return;
+  if (b.classList.contains('sec')) { placeCaret(b.nextElementSibling, false); return; }
+  const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let n, rem = c.off;
+  while ((n = w.nextNode())) { if (rem <= n.length) { setSel(n, rem); return; } rem -= n.length; }
+  placeCaret(b, true);
+}
+function revealCaret() { const b = currentBlock(); b?.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+
+/* 保持結構乾淨：只允許 p / h1 / div.sec */
+function fixEmpty(el) {
+  if (el.textContent !== '') el.querySelectorAll('br').forEach(br => br.remove());
+  else if (!el.querySelector('br')) el.innerHTML = '<br>';
+}
+function flatten(el) {
+  let ch = false;
+  for (const c of [...el.querySelectorAll('*')]) {
+    if (c.tagName === 'BR' || !c.isConnected) continue;
+    c.replaceWith(...c.childNodes); ch = true;
+  }
+  return ch;
+}
+function normalize() {
+  const s = getSelection(); const an = s.rangeCount ? s.anchorNode : null, ao = s.rangeCount ? s.anchorOffset : 0;
+  let touched = false;
+  for (const n of [...editor.childNodes]) {
+    if (n.nodeType === 3) { if (n.textContent === '') { n.remove(); continue; } const p = document.createElement('p'); n.before(p); p.append(n); touched = true; continue; }
+    if (n.nodeType !== 1) { n.remove(); continue; }
+    if (n.classList.contains('sec')) { if (n.tagName !== 'DIV' || n.childNodes.length) { n.replaceWith(makeSec()); touched = true; } continue; }
+    if (n.tagName === 'BR') { n.remove(); continue; }
+    if (n.tagName !== 'P' && n.tagName !== 'H1') {
+      const p = document.createElement('p'); n.before(p); while (n.firstChild) p.append(n.firstChild); n.remove();
+      flatten(p); fixEmpty(p); touched = true; continue;
+    }
+    if (n.attributes.length) { [...n.attributes].forEach(a => n.removeAttribute(a.name)); }
+    if (flatten(n)) touched = true;
+    if (n.tagName === 'P' && n.textContent === '' && !n.querySelector('br')) n.innerHTML = '<br>';
+  }
+  if (!editor.lastElementChild || editor.lastElementChild.tagName !== 'P') editor.append(newP());
+  if (touched && an && an.isConnected && editor.contains(an)) {
+    try { setSel(an, Math.min(ao, an.nodeType === 3 ? an.length : an.childNodes.length)); } catch {}
+  }
+  editor.classList.toggle('blank', editor.children.length === 1 && editor.textContent === '');
+}
+
+/* ════════ 復原／重做 ════════ */
+const hist = { stack: [], i: -1, last: 0 };
+function resetHist() { hist.stack = []; hist.i = -1; hist.last = 0; snap(true); }
+function snap(force) {
+  if (composing) return;
+  const now = Date.now();
+  const s = { html: editor.innerHTML, caret: getCaret(), t: now, hard: !!force };
+  const top = hist.stack[hist.i];
+  hist.stack.length = hist.i + 1;
+  if (!force && top && !top.hard && now - hist.last < 1500 && now - top.t < 4000) {
+    hist.stack[hist.i] = { ...s, t: top.t };
+  } else {
+    hist.stack.push(s); hist.i++;
+    if (hist.stack.length > 500) { hist.stack.shift(); hist.i--; }
+  }
+  hist.last = now;
+}
+function restore(s) { editor.innerHTML = s.html; normalize(); setCaret(s.caret); revealCaret(); hist.last = 0; changed(); }
+function undo() { if (hist.i > 0) { hist.i--; restore(hist.stack[hist.i]); } }
+function redo() { if (hist.i < hist.stack.length - 1) { hist.i++; restore(hist.stack[hist.i]); } }
+
+/* ════════ 換行邏輯：一次換段、兩次分節、三次開章 ════════ */
+function cn(n) {
+  const d = '〇一二三四五六七八九';
+  if (n < 10) return d[n];
+  if (n < 20) return '十' + (n % 10 ? d[n % 10] : '');
+  if (n < 100) return d[Math.floor(n / 10)] + '十' + (n % 10 ? d[n % 10] : '');
+  if (n < 1000) { const h = Math.floor(n / 100), r = n % 100; return d[h] + '百' + (r === 0 ? '' : r < 10 ? '零' + d[r] : (r < 20 ? '一' : '') + cn(r)); }
+  return String(n);
+}
+function afterStruct() { normalize(); snap(true); hist.last = 0; changed(); revealCaret(); }
+
+function splitBlock(b) {
+  const r = getSelection().getRangeAt(0);
+  const tail = document.createRange(); tail.setStart(r.endContainer, r.endOffset); tail.setEnd(b, b.childNodes.length);
+  const frag = tail.extractContents();
+  const p = document.createElement('p'); p.append(frag); flatten(p);
+  fixEmpty(p); fixEmpty(b); b.after(p); placeCaret(p, false);
+}
+function onEnter() {
+  const s = getSelection(); if (!s.rangeCount) return;
+  if (!s.isCollapsed) { s.getRangeAt(0).deleteContents(); normalize(); }
+  const b = currentBlock(); if (!b) return;
+
+  if (b.tagName === 'H1') {                       // 章名中按 Enter：跳到正文
+    let n = b.nextElementSibling;
+    if (!n || n.tagName !== 'P') { n = newP(); b.after(n); }
+    placeCaret(n, false); afterStruct(); return;
+  }
+  if (b.tagName !== 'P') return;
+
+  if (b.textContent === '') {
+    const prev = b.previousElementSibling;
+    const toChapter = old => {                     // 把 old 換成章名並選取，方便直接輸入
+      const h = makeH(''); old.replaceWith(h);
+      h.textContent = '第' + cn([...editor.querySelectorAll('h1')].indexOf(h) + 1) + '章';
+      if (!h.nextElementSibling) h.after(newP());
+      const r = document.createRange(); r.selectNodeContents(h); s.removeAllRanges(); s.addRange(r);
+      afterStruct();
+    };
+    if (!prev) { toChapter(b); return; }           // 稿件開頭的空行：直接建立章名
+    if (prev.classList.contains('sec')) { toChapter(prev); return; } // 第三次：分節升級為新章
+    if (prev && prev.tagName === 'P' && prev.textContent.trim() !== '') { // 第二次：插入分節
+      b.before(makeSec()); placeCaret(b, false); afterStruct(); return;
+    }
+    return;
+  }
+  splitBlock(b); afterStruct();                    // 第一次：換段
+}
+function onBackspace() {
+  const s = getSelection(); if (!s.rangeCount || !s.isCollapsed) return false;
+  const b = currentBlock(); if (!b) return false;
+  const c = getCaret(); if (!c || c.off !== 0) return false;
+  const prev = b.previousElementSibling;
+  if (b.tagName === 'H1') { const p = newP(b.textContent); b.replaceWith(p); placeCaret(p, false); afterStruct(); return true; }
+  if (prev && prev.classList.contains('sec')) { prev.remove(); afterStruct(); return true; }
+  if (prev && prev.tagName === 'H1') { if (b.textContent === '' && b.nextElementSibling) b.remove(); placeCaret(prev, true); afterStruct(); return true; }
+  if (!prev) return true;
+  return false;
+}
+function insertPlain(t) {
+  t = t.replace(/\r\n?/g, '\n');
+  if (!t.includes('\n')) { document.execCommand('insertText', false, t); return; }
+  const s = getSelection(); if (!s.rangeCount) return;
+  s.getRangeAt(0).deleteContents(); normalize();
+  let b = currentBlock(); if (!b) return;
+  if (b.tagName !== 'P') { const p = newP(); b.after(p); placeCaret(p, false); b = p; }
+  const r = getSelection().getRangeAt(0);
+  const tail = document.createRange(); tail.setStart(r.startContainer, r.startOffset); tail.setEnd(b, b.childNodes.length);
+  const frag = tail.extractContents();
+  const lines = t.split('\n');
+  b.append(document.createTextNode(lines[0])); fixEmpty(b);
+  let last = b;
+  for (const ln of lines.slice(1)) { const el = lineBlock(ln); if (el) { last.after(el); last = el; } }
+  if (last.tagName !== 'P') { const p = newP(); last.after(p); last = p; }
+  const off = last.textContent.length;
+  last.append(frag); flatten(last); fixEmpty(last);
+  setCaret({ bi: [...editor.children].indexOf(last), off });
+  afterStruct();
+}
+
+/* ════════ 編輯器事件 ════════ */
+editor.addEventListener('beforeinput', e => {
+  const t = e.inputType;
+  if (t === 'historyUndo') { e.preventDefault(); undo(); return; }
+  if (t === 'historyRedo') { e.preventDefault(); redo(); return; }
+  if (t.startsWith('format')) { e.preventDefault(); return; }
+  if (e.isComposing) return;
+  if (t === 'insertParagraph' || t === 'insertLineBreak') { e.preventDefault(); onEnter(); return; }
+  if (t === 'deleteContentBackward' && onBackspace()) e.preventDefault();
+});
+editor.addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey, k = e.key.toLowerCase();
+  if (mod && !e.altKey && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  else if (mod && k === 'y') { e.preventDefault(); redo(); }
+  else if (mod && ['b', 'i', 'u'].includes(k)) e.preventDefault();
+  else if (e.altKey && !mod && e.code === 'KeyJ') { e.preventDefault(); sendToGems(); }
+});
+editor.addEventListener('input', () => { if (composing) { changed(); return; } normalize(); snap(); changed(); });
+editor.addEventListener('paste', e => { e.preventDefault(); insertPlain(e.clipboardData.getData('text/plain') || ''); });
+editor.addEventListener('drop', e => e.preventDefault());
+for (const el of [editor, notesEl]) {
+  el.addEventListener('compositionstart', () => { composing = true; });
+  el.addEventListener('compositionend', () => { composing = false; if (el === editor) { normalize(); snap(); } changed(); });
+}
+notesEl.addEventListener('input', changed);
+scroller.addEventListener('mousedown', e => {
+  if (e.target === scroller) { e.preventDefault(); editor.focus({ preventScroll: true }); placeCaret(editor.lastElementChild, true); }
+});
+// 直排時，滾輪上下轉為左右（往下滾＝往左讀）
+for (const el of [scroller, notesEl]) {
+  el.addEventListener('wheel', e => {
+    if (state.settings.mode !== 'v' || e.ctrlKey) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { el.scrollLeft -= e.deltaY * (e.deltaMode === 1 ? 32 : 1); e.preventDefault(); }
+  }, { passive: false });
+}
+
+/* ════════ 標點面板 ════════ */
+const PUNCTS = ['，', '。', '、', '；', '：', '！', '？', '「」', '『』', '（）', '《》', '〈〉', '……', '——', '‧'];
+const PAIRED = new Set(['「」', '『』', '（）', '《》', '〈〉']);
+for (const p of PUNCTS) {
+  const b = document.createElement('button'); b.textContent = p; b.title = PAIRED.has(p) ? '插入成對符號（有選取文字時會包起來）' : '插入 ' + p;
+  b.addEventListener('mousedown', e => { e.preventDefault(); insertPunct(p); });
+  $('#punct').append(b);
+}
+function insertPunct(p) {
+  const pair = PAIRED.has(p), o = pair ? p[0] : p, c = pair ? p[1] : '';
+  if (state.kind === 'notes') {
+    const s = notesEl.selectionStart, e = notesEl.selectionEnd, sel = notesEl.value.slice(s, e);
+    notesEl.focus(); notesEl.setRangeText(o + sel + c, s, e, 'end');
+    if (pair && !sel) notesEl.selectionStart = notesEl.selectionEnd = s + 1;
+    changed(); return;
+  }
+  if (state.kind !== 'ms') return;
+  const s = getSelection();
+  if (!s.rangeCount || !editor.contains(s.anchorNode)) { editor.focus(); placeCaret(editor.lastElementChild, true); }
+  const sel = getSelection().toString();
+  document.execCommand('insertText', false, o + sel + c);
+  if (pair && !sel) getSelection().modify('move', 'backward', 'character');
+}
+
+/* ════════ 統計與目錄 ════════ */
+function docStats() {
+  const chapters = []; let cur = { title: '（開頭）', el: null, all: 0, np: 0 }; chapters.push(cur);
+  const total = { all: 0, np: 0 };
+  for (const el of editor.children) {
+    if (el.tagName === 'H1') { cur = { title: el.textContent.trim() || '（未命名章節）', el, all: 0, np: 0 }; chapters.push(cur); }
+    else if (el.tagName === 'P') { const c = count(el.textContent); cur.all += c.all; cur.np += c.np; total.all += c.all; total.np += c.np; }
+  }
+  return { chapters, total };
+}
+function currentChapterEl() {
+  const b = currentBlock(); if (!b) return undefined;
+  let n = b; while (n && n.tagName !== 'H1') n = n.previousElementSibling;
+  return n || null;
+}
+const lab = (name, c) => `${name} <b>${fmt(c.all)}</b> 字（不含標點 ${fmt(c.np)}）`;
+let statsTimer = 0;
+function scheduleStats() { clearTimeout(statsTimer); statsTimer = setTimeout(refreshStats, 200); }
+function refreshStats() {
+  if (state.kind === 'ms') {
+    const { chapters, total } = docStats();
+    const ce = currentChapterEl(); if (ce !== undefined) state.curChap = ce;
+    const cur = chapters.find(c => c.el === state.curChap) || chapters[0];
+    $('#cntChapter').innerHTML = chapters.length > 1 ? lab('本章', cur) : '';
+    $('#cntDoc').innerHTML = lab('本稿', total);
+    state.live = total;
+    renderOutline(chapters);
+  } else if (state.kind === 'notes') {
+    $('#cntChapter').innerHTML = ''; $('#cntDoc').innerHTML = lab('本篇', count(notesEl.value));
+    renderOutline(null);
+  } else { $('#cntChapter').innerHTML = $('#cntDoc').innerHTML = ''; renderOutline(null); }
+  updateBookStat(); updateSel(); highlightWords();
+}
+function updateSel() {
+  let t = '';
+  if (state.kind === 'ms') { const s = getSelection(); if (s.rangeCount && !s.isCollapsed && editor.contains(s.anchorNode)) t = s.toString(); }
+  else if (state.kind === 'notes' && document.activeElement === notesEl) t = notesEl.value.slice(notesEl.selectionStart, notesEl.selectionEnd);
+  $('#cntSel').innerHTML = t ? lab('選取', count(t)) : '';
+}
+function bookTotal() {
+  let all = 0, np = 0;
+  for (const [f, c] of Object.entries(state.counts)) {
+    const x = (state.kind === 'ms' && f === state.file && state.live) ? state.live : c; all += x.all; np += x.np;
+  }
+  return { all, np };
+}
+function updateBookStat() {
+  if (!state.book) { $('#bookStat').innerHTML = $('#cntBook').innerHTML = $('#cntToday').innerHTML = $('#todayMini').textContent = ''; return; }
+  const { all, np } = bookTotal();
+  trackDaily({ all, np }); renderToday();
+  $('#bookStat').innerHTML = `全書 <b>${fmt(all)}</b> 字<br>不含標點 <b>${fmt(np)}</b> 字`;
+  $('#cntBook').innerHTML = `全書 <b>${fmt(all)}</b> 字`;
+}
+function renderOutline(chapters) {
+  const ul = $('#outline'); ul.innerHTML = '';
+  if (!chapters) { if (state.kind === 'notes') ul.innerHTML = '<li class="none">（筆記沒有章節）</li>'; return; }
+  const list = chapters.filter(c => c.el);
+  if (!list.length) { ul.innerHTML = '<li class="none">尚無章節。在稿件開頭的空行按 Enter，或在文中連按三次 Enter 開新章。</li>'; return; }
+  for (const c of list) {
+    const li = document.createElement('li'); if (c.el === state.curChap) li.className = 'on';
+    li.innerHTML = '<span class="n"></span><span class="c"></span>';
+    li.querySelector('.n').textContent = c.title; li.querySelector('.c').textContent = fmt(c.all);
+    li.onclick = () => { editor.focus({ preventScroll: true }); placeCaret(c.el, true); c.el.scrollIntoView({ block: 'start', inline: 'start', behavior: 'smooth' }); };
+    ul.append(li);
+  }
+}
+let rafSel = 0;
+document.addEventListener('selectionchange', () => {
+  if (rafSel) return;
+  rafSel = requestAnimationFrame(() => {
+    rafSel = 0; updateSel();
+    if (state.kind === 'ms') { const ce = currentChapterEl(); if (ce !== undefined && ce !== state.curChap) { state.curChap = ce; scheduleStats(); } }
+  });
+});
+
+/* ════════ 存檔 ════════ */
+let saveTimer = 0, saveChain = Promise.resolve();
+function setStatus(t) { $('#saveState').textContent = t; }
+function changed() { state.dirty = true; setStatus('編輯中…'); clearTimeout(saveTimer); saveTimer = setTimeout(() => flush(), 900); scheduleStats(); }
+function flush(force) {
+  clearTimeout(saveTimer);
+  if (!state.dirty || !state.file || !state.store) return saveChain;
+  if (composing && !force) { saveTimer = setTimeout(() => flush(), 500); return saveChain; }
+  const { store, book, kind, file } = state;
+  const text = kind === 'ms' ? serialize() : notesEl.value;
+  state.dirty = false; setStatus('儲存中…');
+  if (kind === 'ms' && book === state.book) state.counts[file] = countMd(text);
+  saveChain = saveChain.then(() => safeWrite(store, book, kind, file, text)).then(() => {
+    if (!state.dirty) setStatus('已儲存');
+  }).catch(e => { console.error(e); state.dirty = true; setStatus('⚠ 儲存失敗'); });
+  flushMeta();                                     // 每日字數紀錄跟著稿件一起存
+  return saveChain;
+}
+document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); flush(true); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { flush(true); flushMeta(); } });
+window.addEventListener('pagehide', () => { flush(true); flushMeta(); });
+window.addEventListener('beforeunload', e => { if (state.dirty) { flush(true); e.preventDefault(); e.returnValue = ''; } });
+
+/* ════════ 書籍與檔案 ════════ */
+function showEmpty(msg, label, fn) {
+  hideViews(); $('#empty').hidden = false;
+  $('#emptyMsg').textContent = msg; const b = $('#emptyBtn'); b.hidden = !label; b.textContent = label || ''; b.onclick = fn;
+  $('#docTitle').textContent = ''; refreshStats();
+}
+async function refreshBooks() {
+  const sel = $('#bookSel'), books = await state.store.books(); sel.innerHTML = '';
+  if (!books.length) { sel.innerHTML = '<option disabled selected>（尚無書籍）</option>'; }
+  for (const b of books) { const o = document.createElement('option'); o.value = o.textContent = b; sel.append(o); }
+  if (state.book) sel.value = state.book;
+  return books;
+}
+async function openBook(name) {
+  await flush(true); flushMeta();
+  Object.assign(state, { book: name, kind: null, file: null, counts: {}, live: null, curChap: null, meta: null, gems: [] });
+  localStorage.setItem('gaozhi-book', name); $('#bookSel').value = name;
+  await renderFiles();
+  for (const f of state.msFiles) {
+    try {
+      const sig = state.store.stat ? await state.store.stat(name, 'ms', f) : null;
+      const t = await state.store.read(name, 'ms', f); state.counts[f] = countMd(t);
+      if (sig) known.set(pkey(name, 'ms', f), { sig, base: t });
+    } catch {}
+  }
+  await loadMeta(); trackDaily(bookTotal(), true);
+  await loadGems();
+  await openDefault();
+}
+async function renderFiles() {
+  for (const kind of ['ms', 'notes']) {
+    const ul = $(kind === 'ms' ? '#msList' : '#notesList'); ul.innerHTML = '';
+    const files = await state.store.list(state.book, kind);
+    if (kind === 'ms') state.msFiles = files; else state.noteFiles = files;
+    if (!files.length) ul.innerHTML = '<li class="none">（空）</li>';
+    for (const f of files) {
+      const li = document.createElement('li'); li.dataset.kind = kind; li.dataset.file = f;
+      li.innerHTML = '<span class="n"></span><span class="a"><button title="重新命名">✎</button><button title="刪除">✕</button></span>';
+      li.querySelector('.n').textContent = baseName(f);
+      li.onclick = () => openFile(kind, f);
+      const [rb, db] = li.querySelectorAll('button');
+      rb.onclick = e => { e.stopPropagation(); renameFile(kind, f); };
+      db.onclick = e => { e.stopPropagation(); deleteFile(kind, f); };
+      ul.append(li);
+    }
+  }
+  markActive();
+}
+function markActive() { document.querySelectorAll('#side li[data-kind]').forEach(li => li.classList.toggle('on', li.dataset.kind === state.kind && (li.classList.contains('tool') || li.dataset.file === state.file))); }
+function hideViews() { for (const id of ['#scroller', '#notes', '#empty', '#gemsView', '#statsView', '#wordsView']) $(id).hidden = true; }
+async function openDefault() {
+  let last = null; try { last = JSON.parse(localStorage.getItem('gaozhi-last:' + state.book)); } catch {}
+  if (last?.kind === 'gems') return openGems();
+  if (last?.kind === 'stats') return openStats();
+  if (last?.kind === 'words') return openWords();
+  const lists = { ms: state.msFiles, notes: state.noteFiles || [] };
+  if (last && lists[last.kind]?.includes(last.file)) return openFile(last.kind, last.file);
+  if (state.msFiles.length) return openFile('ms', state.msFiles[0]);
+  if (lists.notes.length) return openFile('notes', lists.notes[0]);
+  showEmpty('這本書還沒有稿件。', '新增稿件', () => newFile('ms'));
+}
+async function openFile(kind, f) {
+  await flush(true);
+  let text = '', sig = null;
+  try { if (state.store.stat) sig = await state.store.stat(state.book, kind, f); text = await state.store.read(state.book, kind, f); } catch (e) { console.error(e); alert('無法讀取檔案：' + e.message); return; }
+  Object.assign(state, { kind, file: f, dirty: false, live: null, curChap: null });
+  if (sig) known.set(pkey(state.book, kind, f), { sig, base: text });
+  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind, file: f }));
+  hideViews();
+  $('#docTitle').innerHTML = `<span class="k">${KINDS[kind]}</span><span class="t"></span>`;
+  $('#docTitle .t').textContent = baseName(f);
+  if (kind === 'ms') {
+    notesEl.hidden = true; scroller.hidden = false; load(text);
+    scroller.scrollTop = 0; scroller.scrollLeft = 0;
+    editor.focus({ preventScroll: true }); placeCaret(editor.firstElementChild, false);
+    resetHist();
+  } else {
+    scroller.hidden = true; notesEl.hidden = false; notesEl.value = text;
+    notesEl.scrollTop = 0; notesEl.scrollLeft = 0; notesEl.focus(); notesEl.setSelectionRange(0, 0);
+  }
+  setStatus('已儲存'); markActive(); refreshStats();
+}
+async function newBook() {
+  if (!state.store) return;
+  const n = sanitize(prompt('書名')); if (!n) return;
+  if ((await state.store.books()).includes(n)) return alert('已經有同名的書了。');
+  await state.store.createBook(n);
+  await state.store.write(n, 'ms', '正文.md', '');
+  await state.store.write(n, 'notes', '大綱.md', '');
+  localStorage.setItem('gaozhi-last:' + n, JSON.stringify({ kind: 'ms', file: '正文.md' }));
+  await refreshBooks(); await openBook(n);
+}
+async function newFile(kind) {
+  if (!state.book) return;
+  const n = sanitize(prompt(kind === 'ms' ? '稿件名稱' : '筆記名稱', kind === 'ms' ? '新稿件' : '新筆記')); if (!n) return;
+  const f = n + '.md';
+  if (await state.store.exists(state.book, kind, f)) return alert('已經有同名檔案了。');
+  await flush(true);
+  await state.store.write(state.book, kind, f, '');
+  if (kind === 'ms') state.counts[f] = { all: 0, np: 0 };
+  await renderFiles(); await openFile(kind, f);
+}
+async function renameFile(kind, f) {
+  const n = sanitize(prompt('新名稱', baseName(f))); if (!n || n === baseName(f)) return;
+  const nf = n + '.md';
+  if (await state.store.exists(state.book, kind, nf)) return alert('已經有同名檔案了。');
+  await flush(true);
+  await state.store.rename(state.book, kind, f, nf);
+  if (state.store.stat) {
+    known.delete(pkey(state.book, kind, f));
+    known.set(pkey(state.book, kind, nf), { sig: await state.store.stat(state.book, kind, nf), base: await state.store.read(state.book, kind, nf) });
+  }
+  if (kind === 'ms' && state.counts[f]) { state.counts[nf] = state.counts[f]; delete state.counts[f]; }
+  if (kind === 'ms') { await loadGems(); let ch = false; for (const g of state.gems) if (g.file === f) { g.file = nf; ch = true; } if (ch) await saveGems(); }
+  if (state.kind === kind && state.file === f) {
+    state.file = nf; $('#docTitle .t').textContent = n;
+    localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind, file: nf }));
+  }
+  await renderFiles();
+}
+async function deleteFile(kind, f) {
+  if (!confirm(`確定要刪除「${baseName(f)}」嗎？此動作無法復原。`)) return;
+  if (state.kind === kind && state.file === f) { await flush(true); Object.assign(state, { kind: null, file: null, dirty: false, live: null }); }
+  await state.store.remove(state.book, kind, f);
+  if (kind === 'ms') { shiftBaseline(state.counts[f], -1); delete state.counts[f]; }
+  await renderFiles();
+  if (!state.file) await openDefault(); else refreshStats();
+}
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/markdown;charset=utf-8' }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ════════ 設定 ════════ */
+function loadSettings() { try { Object.assign(state.settings, JSON.parse(localStorage.getItem('gaozhi-settings')) || {}); } catch {} }
+function applySettings(keepPos) {
+  const s = state.settings, B = document.body;
+  const blk = keepPos ? currentBlock() : null;
+  B.classList.toggle('v', s.mode === 'v'); B.classList.toggle('sans', s.font === 'sans'); B.classList.toggle('noindent', !s.indent);
+  document.documentElement.style.setProperty('--fs', s.fs + 'px');
+  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === s.mode));
+  $('#fontBtn').textContent = s.font === 'sans' ? '黑體' : '明體';
+  $('#indentBtn').classList.toggle('on', s.indent);
+  $('#hlBtn').classList.toggle('on', s.hl);
+  applyTheme();
+  localStorage.setItem('gaozhi-settings', JSON.stringify(s));
+  if (blk) blk.scrollIntoView({ block: 'center', inline: 'center' });
+  else if (keepPos) { scroller.scrollLeft = 0; scroller.scrollTop = 0; }
+}
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { state.settings.mode = b.dataset.mode; applySettings(true); });
+$('#fontBtn').onclick = () => { state.settings.font = state.settings.font === 'sans' ? 'serif' : 'sans'; applySettings(); };
+$('#fsDown').onclick = () => { state.settings.fs = Math.max(14, state.settings.fs - 2); applySettings(); };
+$('#fsUp').onclick = () => { state.settings.fs = Math.min(36, state.settings.fs + 2); applySettings(); };
+$('#indentBtn').onclick = () => { state.settings.indent = !state.settings.indent; applySettings(); };
+$('#hlBtn').addEventListener('mousedown', e => { e.preventDefault(); state.settings.hl = !state.settings.hl; applySettings(); highlightWords(); if (state.kind === 'words') $('#hlIn').checked = state.settings.hl; });
+$('#focusBtn').onclick = () => document.body.classList.toggle('focus');
+$('#newBook').onclick = newBook;
+$('#bookSel').onchange = e => openBook(e.target.value);
+document.querySelectorAll('[data-new]').forEach(b => b.onclick = () => newFile(b.dataset.new));
+$('#exportBtn').onclick = async () => {
+  if (state.kind === 'gems') { await loadGems(); download('遺珠.md', serializeGems(state.gems)); return; }
+  if (!state.file) return; await flush(true);
+  download(baseName(state.file) + '.md', state.kind === 'ms' ? serialize() : notesEl.value);
+};
+$('#exportBook').onclick = async () => {
+  if (!state.book) return; await flush(true);
+  const parts = [];
+  for (const f of state.msFiles) { const t = (await state.store.read(state.book, 'ms', f)).trim(); if (t) parts.push(t); }
+  download(state.book + '.md', parts.join('\n\n') + '\n');
+};
+
+/* ════════ 小工具 ════════ */
+const pad = n => String(n).padStart(2, '0');
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayKey = () => keyOf(new Date());
+const nowStr = () => { const d = new Date(); return `${keyOf(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let toastT = 0;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3500); }
+
+/* ════════ 遺珠 ════════ */
+const GEMS = '遺珠.md';
+function parseGems(md) {
+  const out = []; let cur = null, m;
+  for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) {
+    if ((m = ln.match(/^##\s+(.*)$/))) { cur = { time: m[1].trim(), file: '', chap: '', paras: [] }; out.push(cur); continue; }
+    if (/^#\s/.test(ln) || !cur || !ln.trim()) continue;
+    if (!cur.paras.length && !cur.file && (m = ln.match(/^來源：\[(.*)\]\(<?(.*?)>?\)\s*$/))) {
+      let path = m[2]; try { path = decodeURIComponent(path); } catch {}
+      cur.file = path.replace(/^稿件\//, '');
+      const i = m[1].indexOf(' › '); cur.chap = i >= 0 ? m[1].slice(i + 3) : '';
+      continue;
+    }
+    cur.paras.push(unesc(ln));
+  }
+  return out;
+}
+function serializeGems(gems) {
+  return '# 遺珠\n\n' + gems.map(g => [
+    `## ${g.time}`,
+    g.file ? `來源：[${baseName(g.file)} › ${g.chap || '（開頭）'}](<稿件/${g.file}>)` : null,
+    ...g.paras.map(escLine),
+  ].filter(Boolean).join('\n\n')).join('\n\n') + '\n';
+}
+async function loadGems() {
+  let md = ''; try { md = await state.store.read(state.book, 'root', GEMS); } catch {}
+  state.gems = parseGems(md || ''); $('#gemCount').textContent = state.gems.length || '';
+}
+async function saveGems() {
+  const { store, book } = state, text = serializeGems(state.gems);
+  $('#gemCount').textContent = state.gems.length || '';
+  saveChain = saveChain.then(() => store.write(book, 'root', GEMS, text)).catch(e => { console.error(e); toast('⚠ 遺珠儲存失敗'); });
+  return saveChain;
+}
+async function addGem(g) { await loadGems(); state.gems.push(g); await saveGems(); if (state.kind === 'gems') renderGems(); }
+
+function chapterOf(el) { let h = el; while (h && h.tagName !== 'H1') h = h.previousElementSibling; return h ? (h.textContent.trim() || '（未命名章節）') : '（開頭）'; }
+async function sendToGems() {
+  if (state.kind !== 'ms') { toast('請在稿件中使用「送遺珠」'); return; }
+  const s = getSelection();
+  if (!s.rangeCount || !editor.contains(s.anchorNode)) { toast('請先把游標放在要移出的段落，或選取文字'); return; }
+  const range = s.getRangeAt(0);
+  const pieces = [], ops = []; let blocks;
+  if (range.collapsed) {
+    const b = currentBlock();
+    if (!b || b.tagName !== 'P' || !b.textContent.trim()) { toast('游標所在處沒有可移出的段落'); return; }
+    blocks = [b]; pieces.push(b.textContent); ops.push(() => b.remove());
+  } else {
+    blocks = [...editor.children].filter(el => el.tagName === 'P' && range.intersectsNode(el));
+    for (const b of blocks) {
+      const r = document.createRange(); r.selectNodeContents(b);
+      if (b.contains(range.startContainer)) r.setStart(range.startContainer, range.startOffset);
+      if (b.contains(range.endContainer)) r.setEnd(range.endContainer, range.endOffset);
+      const t = r.toString(); if (!t.trim()) continue;
+      pieces.push(t);
+      ops.push(t === b.textContent ? () => b.remove() : () => r.deleteContents());
+    }
+  }
+  if (!pieces.length) { toast('選取範圍內沒有可移出的文字'); return; }
+  const chap = chapterOf(blocks[0]);
+  const after = blocks[blocks.length - 1].nextElementSibling;
+  ops.forEach(f => f());
+  blocks.forEach(b => { if (b.isConnected) fixEmpty(b); });
+  if (!blocks[0].isConnected) placeCaret(after && after.isConnected ? after : editor.lastElementChild, false);
+  afterStruct();
+  const c = count(pieces.join(''));
+  shiftBaseline(c, -1);                            // 移到遺珠不算「少寫了」
+  await addGem({ time: nowStr(), file: state.file, chap, paras: pieces.map(t => t.trim()).filter(Boolean) });
+  toast(`已移至遺珠（${fmt(c.all)} 字）· 按 Ctrl/⌘ Z 可還原原稿`);
+}
+
+async function openGems() {
+  if (!state.book) return;
+  await flush(true);
+  Object.assign(state, { kind: 'gems', file: null, live: null, curChap: null });
+  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'gems' }));
+  hideViews(); $('#gemsView').hidden = false;
+  $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">遺珠</span>';
+  markActive(); refreshStats();
+  await loadGems(); renderGems();
+}
+function renderGems() {
+  const v = $('#gemsView');
+  v.innerHTML = `<h2>遺珠</h2>
+    <p class="hint">捨不得刪的段落都收在這裡。寫作時選取文字，或把游標放在段落中，按 <kbd>Alt J</kbd>／<kbd>⌥J</kbd> 或工具列的「送遺珠」，就會從稿件移到這裡；點來源可以回到原本的章節。內容存在本書資料夾的「遺珠.md」。</p>
+    <div class="addGem"><textarea placeholder="也可以手動貼上要保留的段落……"></textarea><div class="r"><button class="btn">加入遺珠</button></div></div>
+    <div id="gemList"></div>`;
+  const ta = v.querySelector('textarea');
+  v.querySelector('.addGem button').onclick = async () => {
+    const paras = ta.value.replace(/\r\n?/g, '\n').split('\n').map(x => x.trim()).filter(Boolean);
+    if (!paras.length) return;
+    await addGem({ time: nowStr(), file: '', chap: '', paras }); toast('已加入遺珠');
+  };
+  const list = v.querySelector('#gemList');
+  if (!state.gems.length) { list.innerHTML = '<div class="none-msg">還沒有遺珠。</div>'; return; }
+  state.gems.map((g, i) => [g, i]).reverse().forEach(([g, i]) => {
+    const c = count(g.paras.join(''));
+    const card = document.createElement('div'); card.className = 'gem';
+    card.innerHTML = `<div class="meta"><span>${esc(g.time)}</span>${g.file ? `<button class="src" title="回到原章節">${esc(baseName(g.file))} › ${esc(g.chap || '（開頭）')}</button>` : '<span>手動加入</span>'}<span>${fmt(c.all)} 字</span>
+      <span class="acts"><button data-a="copy">複製</button><button data-a="del">刪除</button></span></div>
+      <div class="body">${g.paras.map(p => `<p>${esc(p)}</p>`).join('')}</div>`;
+    card.querySelector('.src')?.addEventListener('click', () => jumpTo(g.file, g.chap));
+    card.querySelector('[data-a=copy]').onclick = async () => {
+      try { await navigator.clipboard.writeText(g.paras.join('\n')); toast('已複製，可貼回稿件'); } catch { toast('無法存取剪貼簿'); }
+    };
+    card.querySelector('[data-a=del]').onclick = async () => {
+      if (!confirm('確定要永久刪除這則遺珠嗎？')) return;
+      await loadGems(); const idx = state.gems.findIndex(x => x.time === g.time && x.paras.join('\n') === g.paras.join('\n'));
+      if (idx >= 0) { state.gems.splice(idx, 1); await saveGems(); }
+      renderGems();
+    };
+    list.append(card);
+  });
+}
+async function jumpTo(file, chap) {
+  if (!state.msFiles.includes(file)) { toast(`找不到稿件「${baseName(file)}」，可能已改名或刪除`); return; }
+  await openFile('ms', file);
+  let el = null;
+  if (chap && chap !== '（開頭）') {
+    el = [...editor.querySelectorAll('h1')].find(h => h.textContent.trim() === chap);
+    if (!el) toast(`找不到章節「${chap}」，已開啟稿件開頭`);
+  }
+  el = el || editor.firstElementChild;
+  editor.focus({ preventScroll: true }); placeCaret(el, true);
+  el.scrollIntoView({ block: 'start', inline: 'start' });
+  el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1800);
+  scheduleStats();
+}
+
+/* ════════ 每日字數 ════════ */
+const META = '.稿紙.json';
+let metaTimer = 0, metaDirty = false;
+// 今天的紀錄另外即時備份在瀏覽器裡：就算視窗關掉時 .稿紙.json 來不及寫完，下次打開也不會歸零
+const backupKey = (store, book) => `gaozhi-daily:${store.name}:${book}`;
+function backupToday() {
+  const k = todayKey(), d = state.meta?.daily?.[k];
+  if (!d || !state.book || !state.store) return;
+  try { localStorage.setItem(backupKey(state.store, state.book), JSON.stringify({ k, d })); } catch {}
+}
+async function loadMeta() {
+  let m = null; try { m = JSON.parse(await state.store.read(state.book, 'root', META)); } catch {}
+  state.meta = (m && typeof m === 'object') ? m : {}; state.meta.daily ??= {};
+  // 檔案裡沒有或比較舊時，改用瀏覽器裡的備份
+  let b = null; try { b = JSON.parse(localStorage.getItem(backupKey(state.store, state.book))); } catch {}
+  if (b?.k && b.d?.s && b.d?.e) {
+    const f = state.meta.daily[b.k];
+    if (!f || (b.d.u || 0) > (f.u || 0)) { state.meta.daily[b.k] = b.d; metaDirty = true; clearTimeout(metaTimer); metaTimer = setTimeout(flushMeta, 2000); }
+  }
+}
+// 有變動就記下來；最多 2 秒後寫入檔案（持續打字時也不會一直往後延）
+function scheduleMeta() {
+  const d = state.meta?.daily?.[todayKey()]; if (d) d.u = Date.now();
+  backupToday();
+  metaDirty = true;
+  if (!metaTimer) metaTimer = setTimeout(flushMeta, 2000);
+}
+function flushMeta() {
+  clearTimeout(metaTimer); metaTimer = 0;
+  if (!metaDirty || !state.book || !state.store || !state.meta) return;
+  metaDirty = false;
+  const { store, book } = state, text = JSON.stringify(state.meta, null, 1);
+  saveChain = saveChain.then(() => store.write(book, 'root', META, text)).catch(e => { console.error(e); metaDirty = true; });
+}
+// 每日字數＝全書稿件字數的淨增減。opening：打開書時若是新的一天，以目前字數為起點（不把在別處的修改算進來）。
+function trackDaily(total, opening) {
+  if (!state.meta) return;
+  const d = state.meta.daily, k = todayKey();
+  if (!d[k]) {
+    const prev = Object.keys(d).sort().pop();
+    const base = (!opening && prev) ? d[prev].e : total;
+    d[k] = { s: { ...base }, e: { ...total } }; scheduleMeta();
+  } else if (d[k].e.all !== total.all || d[k].e.np !== total.np) { d[k].e = { ...total }; scheduleMeta(); }
+}
+// 刪除整份稿件時調整起點，避免算成負的寫作量
+function shiftBaseline(c, sign) {
+  const d = state.meta?.daily?.[todayKey()]; if (!d || !c || (!c.all && !c.np)) return;
+  d.s.all += sign * c.all; d.s.np += sign * c.np; scheduleMeta();
+}
+const dayVal = (d, m) => d ? d.e[m] - d.s[m] : 0;
+const signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v));
+function renderToday() {
+  const m = state.settings.metric, goal = +state.settings.goal || 0;
+  const v = dayVal(state.meta?.daily?.[todayKey()], m);
+  $('#cntToday').innerHTML = `今日 <b>${signed(v)}</b>${goal ? ` ／ ${fmt(goal)}` : ''} 字`;
+  $('#todayMini').textContent = signed(v);
+}
+async function openStats() {
+  if (!state.book) return;
+  await flush(true); flushMeta();
+  Object.assign(state, { kind: 'stats', file: null, live: null, curChap: null });
+  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'stats' }));
+  hideViews(); $('#statsView').hidden = false;
+  $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">每日字數</span>';
+  markActive(); refreshStats(); renderStats();
+}
+async function renderStats() {
+  const v = $('#statsView'), m = state.settings.metric, goal = +state.settings.goal || 0, D = state.meta?.daily || {};
+  const days = [];
+  for (let i = 29; i >= 0; i--) { const dt = new Date(); dt.setDate(dt.getDate() - i); const k = keyOf(dt); days.push({ k, dt, v: dayVal(D[k], m) }); }
+  const today = days[29].v, week = days.slice(-7).reduce((a, d) => a + d.v, 0), month = days.reduce((a, d) => a + d.v, 0);
+  const ok = x => goal ? x >= goal : x > 0;
+  let streak = 0;
+  for (let i = 0; i < 3650; i++) {
+    const dt = new Date(); dt.setDate(dt.getDate() - i); const x = dayVal(D[keyOf(dt)], m);
+    if (ok(x)) streak++; else if (i > 0) break;
+  }
+  const max = Math.max(goal, ...days.map(d => d.v), 1);
+  const wk = '日一二三四五六', md = dt => `${dt.getMonth() + 1}/${dt.getDate()}`;
+  v.innerHTML = `<h2>每日字數</h2>
+    <p class="hint">「${esc(state.book)}」的每日寫作量。</p>
+    <div class="big">
+      <div><b>${signed(today)}</b><span>今日${goal ? `（目標 ${fmt(goal)}）` : ''}</span></div>
+      <div><b>${signed(week)}</b><span>近 7 天</span></div>
+      <div><b>${signed(month)}</b><span>近 30 天</span></div>
+      <div><b>${streak}</b><span>連續${goal ? '達標' : '寫作'}天數</span></div>
+      <div><b id="allBooks">…</b><span>今日所有書籍合計</span></div>
+    </div>
+    ${goal ? `<div class="prog"><i style="width:${Math.min(100, Math.max(0, today / goal * 100))}%"></i></div>` : ''}
+    <div class="ctl">
+      <label>每日目標 <input type="number" id="goalIn" min="0" step="100" value="${goal || ''}" placeholder="不設定"> 字</label>
+      <div class="seg"><button data-metric="all">含標點</button><button data-metric="np">不含標點</button></div>
+    </div>
+    <div class="chart">${goal ? `<div class="goal" style="bottom:${goal / max * 100}%"><span>目標</span></div>` : ''}
+      ${days.map((d, i) => `<div class="bar${i === 29 ? ' today' : ok(d.v) && goal ? ' met' : ''}" style="height:${Math.max(0, d.v) / max * 100}%" title="${md(d.dt)}（${wk[d.dt.getDay()]}）${signed(d.v)} 字"></div>`).join('')}
+    </div>
+    <div class="axis"><span>${md(days[0].dt)}</span><span>${md(days[15].dt)}</span><span>今天</span></div>
+    <table class="days">${days.slice(-7).reverse().map(d => `<tr><td>${md(d.dt)}（${wk[d.dt.getDay()]}）${d.k === todayKey() ? '・今天' : ''}</td><td>${signed(d.v)} 字</td></tr>`).join('')}</table>
+    <p class="foot-note">計算方式：每天全書稿件字數的淨增減，所以刪掉的字會扣回；移到遺珠、刪除整份稿件則不計。直接在其他程式修改檔案的字數不會算進來。
+    紀錄存在本書資料夾中的隱藏檔「.稿紙.json」。</p>`;
+  v.querySelectorAll('[data-metric]').forEach(b => {
+    b.classList.toggle('on', b.dataset.metric === m);
+    b.onclick = () => { state.settings.metric = b.dataset.metric; applySettings(); renderToday(); renderStats(); };
+  });
+  v.querySelector('#goalIn').onchange = e => { state.settings.goal = Math.max(0, parseInt(e.target.value) || 0); applySettings(); renderToday(); renderStats(); };
+  // 所有書籍今日合計
+  let sum = 0;
+  for (const b of await state.store.books()) {
+    if (b === state.book) { sum += today; continue; }
+    try { const mm = JSON.parse(await state.store.read(b, 'root', META)); sum += dayVal(mm?.daily?.[todayKey()], m); } catch {}
+  }
+  const el = v.querySelector('#allBooks'); if (el) el.textContent = signed(sum);
+}
+
+$('#toolGems').onclick = () => openGems();
+$('#toolStats').onclick = () => openStats();
+$('#cntToday').onclick = () => openStats();
+$('#toolWords').onclick = () => openWords();
+$('#cntWords').onclick = () => openWords();
+$('#gemBtn').addEventListener('mousedown', e => { e.preventDefault(); sendToGems(); });
+setInterval(() => { if (state.book) { updateBookStat(); } }, 60000);
+
+/* ════════ 配色 ════════ */
+// [代號, 名稱, 紙色, 強調色]
+const THEMES = [
+  ['auto', '跟隨系統', 'linear-gradient(135deg,#fbf9f4 50%,#22211e 50%)', '#9b3b2a'],
+  ['paper', '宣紙', '#fbf9f4', '#9b3b2a'],
+  ['sepia', '茶箋', '#f3e8d2', '#8c3b1f'],
+  ['bamboo', '竹青', '#eef2ea', '#3d6b4f'],
+  ['mist', '霧藍', '#f6f8fa', '#3a5f8f'],
+  ['night', '墨夜', '#22211e', '#d98466'],
+  ['deep', '深海', '#1a2129', '#86acd9'],
+  ['black', '純黑', '#0b0b0b', '#e0a050'],
+];
+function applyTheme() {
+  const t = state.settings.theme, root = document.documentElement;
+  if (t && t !== 'auto') root.dataset.theme = t; else delete root.dataset.theme;
+  // 視窗標題列（Chrome 的 --app 模式）也跟著換色
+  $('meta[name=theme-color]').content = getComputedStyle(root).getPropertyValue('--bg').trim();
+  document.querySelectorAll('#themePop button').forEach(b => b.classList.toggle('on', b.dataset.theme === (t || 'auto')));
+}
+for (const [id, name, paper, accent] of THEMES) {
+  const b = document.createElement('button'); b.dataset.theme = id;
+  b.innerHTML = `<span class="sw" style="background:${paper}"><b style="background:${accent}"></b></span>${name}`;
+  b.addEventListener('mousedown', e => { e.preventDefault(); state.settings.theme = id; applySettings(); });
+  $('#themePop').append(b);
+}
+$('#themeBtn').addEventListener('mousedown', e => { e.preventDefault(); $('#themePop').hidden = !$('#themePop').hidden; });
+document.addEventListener('mousedown', e => { if (!e.target.closest('.pop-wrap')) $('#themePop').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#themePop').hidden = true; });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+/* ════════ 常用詞 ════════ */
+const DEFAULT_WORDS = ['然後', '突然', '忽然', '其實', '只是', '似乎', '彷彿', '緩緩', '微微', '輕輕', '慢慢', '默默', '淡淡', '一絲', '一抹', '不禁', '頓時', '竟然', '深深', '終於'];
+const cfg = { words: [...DEFAULT_WORDS], ignore: [] };
+const HL_OK = typeof Highlight === 'function' && !!CSS.highlights;
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+let wordRe = null;
+function buildRe() {
+  const ws = [...new Set(cfg.words)].filter(Boolean).sort((a, b) => b.length - a.length);   // 長詞優先
+  wordRe = ws.length ? new RegExp(ws.map(escRe).join('|'), 'gu') : null;
+}
+async function loadCfg() {
+  let c = null; try { c = JSON.parse(await state.store.readCfg()); } catch {}
+  cfg.words = Array.isArray(c?.words) ? c.words : [...DEFAULT_WORDS];
+  cfg.ignore = Array.isArray(c?.ignore) ? c.ignore : [];
+  buildRe(); $('#wordsMini').textContent = cfg.words.length || '';
+}
+function saveCfg() {
+  buildRe(); highlightWords();
+  const store = state.store, text = JSON.stringify({ words: cfg.words, ignore: cfg.ignore }, null, 1);
+  saveChain = saveChain.then(() => store.writeCfg(text)).catch(e => { console.error(e); toast('⚠ 常用詞清單儲存失敗'); });
+  return saveChain;
+}
+const splitWords = s => s.split(/[\s,，、;；/|]+/u).map(w => w.trim()).filter(Boolean);
+
+// 在稿件中用 CSS Highlight 標示（不改動文字本身，也不影響編輯、復原與存檔）
+function highlightWords() {
+  if (composing) return;                           // 選字中先不動，選完再更新
+  const on = state.kind === 'ms' && state.settings.hl && wordRe;
+  if (!on) {
+    if (HL_OK) { CSS.highlights.delete('gz-words'); CSS.highlights.delete('gz-words-b'); }
+    $('#cntWords').innerHTML = '';
+    return;
+  }
+  // 緊接在另一個常用詞後面的詞用稍深的底色，相鄰的兩個詞才分得出來
+  const hl = HL_OK ? new Highlight() : null, hlB = HL_OK ? new Highlight() : null; let n = 0;
+  for (const b of editor.children) {
+    if (b.tagName !== 'P') continue;
+    const nodes = []; let text = '';
+    const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT);
+    for (let t; (t = w.nextNode());) { nodes.push([t, text.length]); text += t.data; }
+    if (!text) continue;
+    const loc = (off, end) => {
+      for (const [t, s] of nodes) if (end ? off <= s + t.length : off < s + t.length) return [t, off - s];
+      const [t] = nodes[nodes.length - 1]; return [t, t.length];
+    };
+    let prevEnd = -1, alt = false;
+    for (const m of text.matchAll(wordRe)) {
+      n++; if (!hl) continue;
+      const r = document.createRange();
+      r.setStart(...loc(m.index, false)); r.setEnd(...loc(m.index + m[0].length, true));
+      alt = m.index === prevEnd ? !alt : false; prevEnd = m.index + m[0].length;
+      (alt ? hlB : hl).add(r);
+    }
+  }
+  if (hl) { CSS.highlights.set('gz-words', hl); CSS.highlights.set('gz-words-b', hlB); }
+  $('#cntWords').innerHTML = `常用詞 <b>${fmt(n)}</b> 處`;
+}
+
+// 全書稿件的正文行（不含章名、分節）
+async function bookLines() {
+  await flush(true);
+  const out = [];
+  for (const f of state.msFiles) {
+    let t = ''; try { t = await state.store.read(state.book, 'ms', f); } catch {}
+    for (const l of t.replace(/\r\n?/g, '\n').split('\n')) if (l.trim() && !HEADING.test(l) && !BREAK.test(l)) out.push(unesc(l));
+  }
+  return out;
+}
+function countListed(lines) {
+  const c = new Map(); if (!wordRe) return c;
+  for (const l of lines) for (const m of l.matchAll(wordRe)) c.set(m[0], (c.get(m[0]) || 0) + 1);
+  return c;
+}
+// 自動找出重複的二到四字詞
+const FUNC = /^[的了是在我你他她它們這那也就都和與及之而著把被讓給對向從到要會能說]+$/u;
+function findRepeats(lines) {
+  const cnt = new Map();
+  for (const l of lines) for (const run of l.match(/\p{Script=Han}{2,}/gu) || []) {
+    for (let n = 2; n <= 4; n++) for (let i = 0; i + n <= run.length; i++) { const g = run.slice(i, i + n); cnt.set(g, (cnt.get(g) || 0) + 1); }
+  }
+  const listed = new Set(cfg.words), ignored = new Set(cfg.ignore), drop = new Set();
+  // 較短的詞若幾乎都出現在某個較長的詞裡，只保留較長的那個
+  for (const [g, c] of cnt) {
+    if (g.length < 3 || c < 3) continue;
+    for (const sub of [g.slice(1), g.slice(0, -1)]) if (c >= 0.75 * (cnt.get(sub) || Infinity)) drop.add(sub);
+  }
+  return [...cnt].filter(([g, c]) => c >= 3 && !drop.has(g) && !listed.has(g) && !ignored.has(g) && !FUNC.test(g))
+    .sort((a, b) => b[1] - a[1] || b[0].length - a[0].length).slice(0, 40);
+}
+
+async function openWords() {
+  if (!state.book) return;
+  await flush(true);
+  Object.assign(state, { kind: 'words', file: null, live: null, curChap: null });
+  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'words' }));
+  hideViews(); $('#wordsView').hidden = false;
+  $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">常用詞</span>';
+  markActive(); refreshStats();
+  await loadCfg(); await renderWords();
+}
+async function renderWords() {
+  const v = $('#wordsView');
+  v.innerHTML = `<h2>常用詞</h2>
+    <p class="hint">列出你容易重複使用的詞語，寫作時會在稿件中用底色標出，也可以看看每個詞在全書用了幾次。清單存在寫作資料夾的「.稿紙設定.json」，所有書共用。</p>
+    <div class="ctl"><label class="chk"><input type="checkbox" id="hlIn"> 在稿件中標示（工具列的「標示」也可以切換）</label>
+      ${HL_OK ? '' : '<span>這個瀏覽器不支援標示，請改用 Chrome 或 Edge。</span>'}</div>
+    <div class="addWord"><input id="wordIn" placeholder="加入詞語，可以一次輸入多個，用空格或頓號分開"><button class="btn" id="wordAdd">加入</button></div>
+    <div id="chips" class="chips"></div>
+    <div class="links"><button id="addDefaults">加入預設詞語</button><button id="clearWords">清空清單</button></div>
+    <h3>自動找出的重複詞</h3>
+    <p class="hint">本書稿件中出現三次以上的二到四字詞，依次數排列。人名、地名等不需要的詞，按「忽略」就不會再出現。</p>
+    <div id="reps"><div class="none-msg">計算中……</div></div>`;
+  const hlIn = v.querySelector('#hlIn'); hlIn.checked = state.settings.hl;
+  hlIn.onchange = () => { state.settings.hl = hlIn.checked; applySettings(); };
+  const lines = await bookLines();
+  if (state.kind !== 'words') return;
+  const total = lines.reduce((a, l) => a + count(l).all, 0);
+
+  const addWords = ws => {
+    const add = ws.filter(w => !cfg.words.includes(w)); if (!add.length) return;
+    cfg.words.push(...add); cfg.ignore = cfg.ignore.filter(w => !add.includes(w));
+    saveCfg(); drawChips(); drawReps();
+  };
+  const drawChips = () => {
+    const c = countListed(lines), box = v.querySelector('#chips'); box.innerHTML = '';
+    $('#wordsMini').textContent = cfg.words.length || '';
+    if (!cfg.words.length) { box.innerHTML = '<span class="hint" style="margin:0">清單是空的。</span>'; return; }
+    const per = w => total ? (c.get(w) || 0) / total * 10000 : 0;
+    for (const w of [...cfg.words].sort((a, b) => (c.get(b) || 0) - (c.get(a) || 0) || collator.compare(a, b))) {
+      const n = c.get(w) || 0, el = document.createElement('span'); el.className = 'chip';
+      el.title = total ? `全書 ${fmt(n)} 次，約每萬字 ${per(w).toFixed(1)} 次` : '';
+      el.innerHTML = `<b></b><span class="c${per(w) >= 5 ? ' hot' : ''}">${fmt(n)}</span><button title="從清單移除">✕</button>`;
+      el.querySelector('b').textContent = w;
+      el.querySelector('button').onclick = () => { cfg.words = cfg.words.filter(x => x !== w); saveCfg(); drawChips(); drawReps(); };
+      box.append(el);
+    }
+  };
+  const drawReps = () => {
+    const box = v.querySelector('#reps'), reps = findRepeats(lines);
+    if (!reps.length) { box.innerHTML = '<div class="none-msg">沒有找到重複三次以上的詞語。</div>'; }
+    else {
+      box.innerHTML = '<table class="days reps"></table>';
+      const tb = box.querySelector('table');
+      for (const [g, n] of reps) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td></td><td>${fmt(n)} 次</td><td><button class="add">＋ 加入</button><button>忽略</button></td>`;
+        tr.firstChild.textContent = g;
+        const [a, ig] = tr.querySelectorAll('button');
+        a.onclick = () => addWords([g]);
+        ig.onclick = () => { cfg.ignore.push(g); saveCfg(); tr.remove(); };
+        tb.append(tr);
+      }
+    }
+    if (cfg.ignore.length) {
+      const b = document.createElement('div'); b.className = 'links';
+      b.innerHTML = `<button>恢復已忽略的 ${fmt(cfg.ignore.length)} 個詞</button>`;
+      b.firstChild.onclick = () => { cfg.ignore = []; saveCfg(); drawReps(); };
+      box.append(b);
+    }
+  };
+  const inp = v.querySelector('#wordIn');
+  const submit = () => { const ws = splitWords(inp.value); if (ws.length) { addWords(ws); inp.value = ''; } };
+  v.querySelector('#wordAdd').onclick = submit;
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submit(); } });
+  v.querySelector('#addDefaults').onclick = () => addWords(DEFAULT_WORDS);
+  v.querySelector('#clearWords').onclick = () => { if (confirm('確定要清空常用詞清單嗎？')) { cfg.words = []; saveCfg(); drawChips(); drawReps(); } };
+  drawChips(); drawReps();
+}
+
+/* ════════ 偵測外部修改（例如在手機上改了同一個檔案） ════════ */
+const known = new Map();                       // 路徑 → { sig: 檔案時間與大小, base: 上次讀取／寫入的內容 }
+const pkey = (b, k, f) => `${b}\u0000${k}\u0000${f}`;
+const sameSig = (a, b) => a && b && a.m === b.m && a.s === b.s;
+const diffC = (a, b) => ({ all: a.all - b.all, np: a.np - b.np });
+
+async function safeWrite(store, book, kind, file, text) {
+  const k = pkey(book, kind, file), rec = known.get(k);
+  if (store.stat && rec) {
+    const cur = await store.stat(book, kind, file);
+    if (cur && !sameSig(cur, rec.sig)) {
+      const ext = await store.read(book, kind, file);
+      if (ext !== rec.base) return resolveConflict(store, book, kind, file, text, ext, cur, rec.base);
+    }
+  }
+  await store.write(book, kind, file, text);
+  if (store.stat) known.set(k, { sig: await store.stat(book, kind, file), base: text });
+}
+
+// 外部修改不算進「今日字數」：調整當日起點
+function creditExternal(book, kind, oldText, newText) {
+  if (kind !== 'ms' || book !== state.book) return;
+  shiftBaseline(diffC(countMd(newText), countMd(oldText)), 1);
+}
+
+// 把外部版本載入目前開著的檔案（盡量保留游標與捲動位置）
+function applyExternal(book, kind, file, ext, cur, base) {
+  known.set(pkey(book, kind, file), { sig: cur, base: ext });
+  creditExternal(book, kind, base, ext);
+  if (kind === 'ms') state.counts[file] = countMd(ext);
+  if (book !== state.book || kind !== state.kind || file !== state.file) return;
+  if (kind === 'ms') {
+    const c = getCaret(), sx = scroller.scrollLeft, sy = scroller.scrollTop;
+    load(ext); setCaret(c); scroller.scrollLeft = sx; scroller.scrollTop = sy; resetHist();
+  } else {
+    const a = notesEl.selectionStart, sy = notesEl.scrollTop, sx = notesEl.scrollLeft;
+    notesEl.value = ext; notesEl.setSelectionRange(Math.min(a, ext.length), Math.min(a, ext.length));
+    notesEl.scrollTop = sy; notesEl.scrollLeft = sx;
+  }
+  state.dirty = false; setStatus('已儲存'); refreshStats();
+}
+
+async function resolveConflict(store, book, kind, file, mine, ext, cur, base) {
+  const d = new Date(), stamp = `${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+  const name = baseName(file);
+  const useExt = confirm(
+    `「${name}」在其他地方（例如手機）被修改過，而這裡也有尚未儲存的修改。\n\n` +
+    `確定：改用外部的版本，這裡的修改另存到「筆記」\n` +
+    `取消：保留這裡的版本，外部的版本另存到「筆記」`);
+  const copy = `衝突副本：${name}（${useExt ? '本機' : '外部'} ${stamp}）.md`;
+  if (useExt) {
+    await store.write(book, 'notes', copy, mine);
+    applyExternal(book, kind, file, ext, cur, base);
+  } else {
+    await store.write(book, 'notes', copy, ext);
+    await store.write(book, kind, file, mine);
+    known.set(pkey(book, kind, file), { sig: await store.stat(book, kind, file), base: mine });
+  }
+  if (book === state.book) await renderFiles();
+  toast(`已把${useExt ? '這裡' : '外部'}的版本另存到筆記「${baseName(copy)}」`);
+}
+
+let checking = false;
+async function checkExternal() {
+  if (checking || composing || !state.store?.stat || !state.book) return;
+  checking = true;
+  try {
+    await saveChain;
+    const { store, book, kind, file } = state;
+    // 1. 目前開著的檔案
+    if ((kind === 'ms' || kind === 'notes') && file) {
+      const k = pkey(book, kind, file), rec = known.get(k), cur = await store.stat(book, kind, file);
+      if (!cur) {
+        if (rec && !rec.gone) { rec.gone = true; toast(`「${baseName(file)}」已在其他地方被刪除或改名；繼續編輯會重新建立這個檔案`); }
+      } else if (rec && !sameSig(cur, rec.sig)) {
+        rec.gone = false;
+        const ext = await store.read(book, kind, file);
+        if (ext === rec.base) rec.sig = cur;
+        else if (!state.dirty && state.file === file) { applyExternal(book, kind, file, ext, cur, rec.base); toast(`已載入「${baseName(file)}」在其他地方的修改`); }
+        else await flush(true);                     // 兩邊都改了：存檔時會詢問
+      }
+    }
+    if (book !== state.book) return;
+    // 2. 其他稿件：更新字數（不算進今日字數）
+    const ms = await store.list(book, 'ms'), notes = await store.list(book, 'notes');
+    for (const f of ms) {
+      if (state.kind === 'ms' && f === state.file) continue;
+      const k = pkey(book, 'ms', f), rec = known.get(k), cur = await store.stat(book, 'ms', f);
+      if (!cur || (rec && sameSig(cur, rec.sig))) continue;
+      const t = await store.read(book, 'ms', f), nc = countMd(t);
+      if (book !== state.book) return;
+      shiftBaseline(diffC(nc, state.counts[f] || { all: 0, np: 0 }), 1);
+      state.counts[f] = nc; known.set(k, { sig: cur, base: t });
+    }
+    for (const f of Object.keys(state.counts)) {
+      if (!ms.includes(f) && !(state.kind === 'ms' && f === state.file)) { shiftBaseline(state.counts[f], -1); delete state.counts[f]; }
+    }
+    // 3. 檔案清單有變（例如在手機上新增了檔案）才重畫
+    if (JSON.stringify(ms) !== JSON.stringify(state.msFiles) || JSON.stringify(notes) !== JSON.stringify(state.noteFiles || [])) await renderFiles();
+    updateBookStat();
+  } catch (e) { console.error(e); }
+  finally { checking = false; }
+}
+window.addEventListener('focus', checkExternal);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkExternal(); });
+setInterval(() => { if (!document.hidden) checkExternal(); }, 5000);
+
+/* ════════ 啟動 ════════ */
+const SAMPLE = `# 第一章　雨夜
+
+雨從傍晚一直下到深夜，巷口的路燈在水窪裡碎成一片一片。
+
+她收好傘，推開書店的木門。門上的鈴鐺響了一聲，又很快安靜下來。
+
+「還開著嗎？」她問。
+
+* * *
+
+第二天早上，雨停了。
+`;
+async function useStore(store) {
+  await flush(true);
+  Object.assign(state, { store, book: null, kind: null, file: null, counts: {}, live: null });
+  $('#welcome').hidden = true; $('#storeName').textContent = store.name;
+  await loadCfg();
+  let books = await refreshBooks();
+  if (!books.length && store instanceof LocalStore && !localStorage.getItem('gaozhi-sampled')) {
+    localStorage.setItem('gaozhi-sampled', '1');
+    await store.createBook('範例之書'); await store.write('範例之書', 'ms', '正文.md', SAMPLE);
+    await store.write('範例之書', 'notes', '大綱.md', '主角：在舊書店打工的大學生。\n\n第一章：雨夜相遇。\n');
+    books = await refreshBooks();
+  }
+  const last = localStorage.getItem('gaozhi-book');
+  if (books.length) await openBook(books.includes(last) ? last : books[0]);
+  else showEmpty('還沒有任何書。', '建立第一本書', newBook);
+}
+function showWelcome(handle) {
+  $('#welcome').hidden = false;
+  const fs = 'showDirectoryPicker' in window;
+  $('#pickDir').hidden = !fs;
+  $('#pickDir').classList.toggle('primary', !handle);
+  $('#fsNote').textContent = fs ? '' : '這個瀏覽器不支援直接讀寫本機資料夾，請改用 Chrome 或 Edge。仍可在瀏覽器中試用，再用「匯出」下載 Markdown 檔。';
+  $('#closeWelcome').hidden = !state.store;
+  const rc = $('#reconnect');
+  if (handle) {
+    rc.hidden = false; rc.textContent = `繼續使用「${handle.name}」`;
+    rc.onclick = async () => {
+      try { if (await handle.requestPermission({ mode: 'readwrite' }) === 'granted') { localStorage.setItem('gaozhi-store', 'fs'); useStore(new FSStore(handle)); } }
+      catch (e) { alert('無法存取資料夾，請重新選擇。'); }
+    };
+  } else rc.hidden = true;
+}
+$('#pickDir').onclick = async () => {
+  try {
+    const h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'gaozhi' });
+    await kvSet('root', h).catch(() => {});
+    localStorage.setItem('gaozhi-store', 'fs'); useStore(new FSStore(h));
+  } catch (e) { if (e.name !== 'AbortError') alert('無法開啟資料夾：' + e.message); }
+};
+$('#useLocal').onclick = () => { localStorage.setItem('gaozhi-store', 'local'); useStore(new LocalStore()); };
+$('#closeWelcome').onclick = () => { $('#welcome').hidden = true; };
+$('#switchStore').onclick = async () => { await flush(true); showWelcome(await kvGet('root').catch(() => null)); };
+
+(async function boot() {
+  loadSettings(); applySettings();
+  const mode = localStorage.getItem('gaozhi-store');
+  if (mode === 'local') return useStore(new LocalStore());
+  let h = null;
+  if ('showDirectoryPicker' in window) h = await kvGet('root').catch(() => null);
+  if (mode === 'fs' && h) {
+    try { if (await h.queryPermission({ mode: 'readwrite' }) === 'granted') return useStore(new FSStore(h)); } catch {}
+  }
+  showWelcome(h);
+})();
+</script>
+</body>
+</html>
