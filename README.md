@@ -93,6 +93,7 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 ### Books, manuscripts and notes
  
 - Create books, manuscripts and notes; rename or delete files.
+- Opening a manuscript or note (including at launch, which reopens the last file) puts the cursor at the very end and scrolls it into view, so you can keep writing immediately.
 - Notes use a plain text area, which also follows 橫排 / 直排.
 - **匯出** downloads the current file; **匯出全書** downloads all manuscripts merged into one `.md`.
 ### 遺珠 (cut paragraphs)
@@ -189,3 +190,4 @@ All on 2026-10-15.
 12. **Fix: a paragraph that looks like a break lost its escape on reload.** (2026-10-16)
     - **Cause**: a paragraph such as `◇◇◇` was saved as `\◇◇◇`, but on load only `\` before `#`, `*`, `-` or `_` was removed, so the backslash showed in the text.
     - **Fix**: the unescape now covers every character the break detector accepts (`◇ ◆ ＊ ※ ☆ ★ ○ ●` too). Checked with a save/load round trip. The accepted break characters are now listed under *Manuscript format*.
+13. **Open at the end of the file.** (2026-10-16) Opening a manuscript or note now places the cursor at the end and scrolls to it, instead of the start.
