@@ -49,6 +49,8 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 └── 書名/
     ├── 稿件/          manuscripts (.md)
     ├── 筆記/          notes (.md), including any conflict copies
+    │   ├── 人物/      note categories are subfolders (e.g. 大綱, 人物, 設定)
+    │   │   └── 範本.md   optional template for new notes in this category
     ├── 遺珠.md        cut paragraphs
     └── .稿紙.json     daily word-count history (hidden file)
 ```
@@ -60,13 +62,35 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 | Paragraph | One line, separated from the next by a blank line |
 | Section break ◇　◇　◇ | `* * *` |
 | Chapter heading | `# 第一章　標題` |
+| 引文 (quote: poem, found text, spell…) | `> 一行` per line, no blank line between lines; `>` alone = gap between stanzas |
  
 - Paragraph indentation is display-only; it is not written into the file.
-- A paragraph that starts with `#`, or looks like a break, is escaped with `\` so it isn't misread.
+- A paragraph that starts with `#` or `>`, or looks like a break, is escaped with `\` so it isn't misread.
 - On load the app also accepts three or more repeats (spaces allowed) of `*`, `-`, `_`, `◇`, `◆`, `＊`, `※`, `☆`, `★`, `○` or `●` as section breaks, and any `#`–`######` heading as a chapter.
 ## Features
  
+### Workspaces (構思／寫作／修訂)
+ 
+The switch at the top of the sidebar picks one of three workspaces, each showing only what that stage of the work needs. **Ctrl/⌘‑1, 2, 3** switch between them.
+ 
+| Workspace | Sidebar | Toolbar extras |
+|---|---|---|
+| **構思** (planning) | 筆記, grouped into categories (see *Note categories* below) | none |
+| **寫作** (writing) | 稿件, 每日字數, 目錄 | 專注, 送遺珠 |
+| **修訂** (editing) | 稿件, 遺珠, 每日字數, 常用詞, 目錄 | 標示, 送遺珠 |
+ 
+- Each workspace remembers the last file or view you had open in it, per book.
+- If the open manuscript also belongs to the workspace you switch to (寫作 ↔ 修訂), it stays open where you were.
+- Opening something from another workspace switches automatically, e.g. clicking `今日` in the status bar while in 構思 goes to 寫作.
+- 常用詞 highlighting is shown only in 修訂, so it doesn't distract while drafting.
+- The workspace is saved per browser.
+ 
 ### Writing
+ 
+- **專注 (focus mode)**, in 寫作: the paragraph with the cursor stays in the middle of the screen and every other paragraph fades out. Toggle it with **專注** in the toolbar or **Ctrl/⌘‑Shift‑F**.
+  - Works in 橫排 and 直排 (in 直排 the paragraph is centred left to right).
+  - While you drag to select, the page doesn't move; it re-centres when you let go.
+  - Display-only: the fading is a style rule, so the text, saving, undo and IME input are not affected.
  
 - **Enter rules**
   - 1× Enter: new paragraph.
@@ -75,8 +99,14 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
   - Enter on the empty first line of a manuscript creates a chapter heading directly.
   - Enter inside a chapter title moves to the body.
   - Backspace reverses any of these steps.
+- **引文 (quotes)**: for poems, found text, book quotations, spells and the like.
+  - **Tab** turns the paragraph with the cursor (or every paragraph in the selection) into a quote; Tab again turns it back. **Shift+Tab** always turns it back.
+  - Inside a quote each line is its own line, like verse: 1× Enter starts a new line, 2× Enter leaves a blank line between stanzas, 3× Enter goes back to normal text. Backspace at the start of the first quote line turns it back into a paragraph.
+  - Shown in 楷體 (標楷體 on Mac and Windows), indented, with a faint line beside it; no paragraph indent. Works in 橫排 and 直排.
+  - Saved as a Markdown block quote: `> ` before each line, lines directly under each other, and a lone `>` between stanzas. Obsidian shows the lines as separate lines. Quoted text counts like normal text.
+  - Pasted Markdown keeps its quotes. Two quotes separated only by a blank line in the file are joined into one when the app saves.
 - **橫排 / 直排**: horizontal left-to-right, or vertical right-to-left like a printed book. In 直排 the mouse wheel scrolls sideways.
-- **Toolbar**: 明體 or 黑體, font size, two-character paragraph indent, 標示 (常用詞 highlighting on/off) and 配色.
+- **Toolbar**: 明體 or 黑體, font size, two-character paragraph indent, 專注 (寫作 only), 標示 (常用詞 highlighting on/off, 修訂 only) and 配色.
 - **配色 (themes)**: 跟隨系統 (light or dark with the system), 宣紙, 茶箋 (sepia), 竹青 (green), 霧藍 (blue-grey), 墨夜 (dark), 深海 (dark blue), 純黑 (black).
   - The whole interface follows the theme, including the 每日字數 chart and the app window's title bar.
   - The choice is saved per browser, like the font and size settings.
@@ -95,6 +125,13 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 - Create books, manuscripts and notes; rename or delete files.
 - Opening a manuscript or note (including at launch, which reopens the last file) puts the cursor at the very end and scrolls it into view, so you can keep writing immediately.
 - Notes use a plain text area, which also follows 橫排 / 直排.
+- **Note categories** (in 構思): each subfolder of `筆記` is a category, shown as a group in the sidebar. Notes directly in `筆記` (including conflict copies) are listed above the groups.
+  - **＋分類** creates a category. If a book has none yet, the sidebar offers **建立建議分類：大綱・人物・設定**. New books start with these three.
+  - Hover a category for ＋ (new note in it), ✎ (rename) and ✕ (delete, only when it has no notes). Click its name to fold or unfold it; this is remembered.
+  - Move a note by dragging it onto a category, or onto the 筆記 heading to take it out of its category. You can also use ⇄ and type a category name; a new name creates the category.
+  - **Templates**: a note called `範本.md` in a category is that category's template. A new note created there starts with its content, with `{{名稱}}` replaced by the new note's name. The suggested 人物 and 設定 categories come with a template (a character sheet and a worldbuilding entry). Edit or delete them as you like; they're ordinary notes, also editable on the phone.
+  - Categories are ordinary folders, so on the phone (iA Writer, Obsidian, Files) you see and create them the same way. Notes in deeper folders made elsewhere are listed under their top category.
+  - Renaming a category moves its notes into a new folder. If the folder also holds other files or subfolders, rename it in Finder / File Explorer instead.
 - **匯出** downloads the current file; **匯出全書** downloads all manuscripts merged into one `.md`.
 ### 遺珠 (cut paragraphs)
  
@@ -102,7 +139,7 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
   - A cursor with no selection sends the whole paragraph.
   - A selection sends exactly the selected text, even across paragraphs; chapter titles are never moved.
 - **Each entry** records the time, its character count and a source link (e.g. `正文 › 第一章　雨夜`). Clicking the link opens the manuscript at that chapter and highlights it briefly.
-- **The 遺珠 view** (工具 → 遺珠) lists entries newest first, with 複製 and 刪除 buttons and a box for adding passages by hand.
+- **The 遺珠 view** (修訂 → 工具 → 遺珠) lists entries newest first, with 複製 and 刪除 buttons and a box for adding passages by hand.
 - **File format**: in `遺珠.md`, each entry has a `## 2026-10-15 14:32` heading, then a source line `來源：[正文 › 第一章](<稿件/正文.md>)`, then its paragraphs. The link also works in other Markdown editors.
 - **Renaming**: renaming a manuscript updates its 遺珠 links. If a chapter was renamed, the link opens the manuscript and says the chapter wasn't found.
 - **Undo**: Ctrl/⌘‑Z restores the text to the manuscript, but the 遺珠 copy stays.
@@ -121,12 +158,12 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
  
 - **The list**: words and phrases you tend to overuse. It starts with 20 common ones (然後, 突然, 其實, 緩緩, 微微, 彷彿, …) that you can remove or add to.
   - The list is shared by all books and stored in `.稿紙設定.json` in the writing folder, so it syncs with the folder.
-- **Highlighting**: every occurrence in the open manuscript gets a background colour, updated as you type.
+- **Highlighting**: in the 修訂 workspace, every occurrence in the open manuscript gets a background colour, updated as you type.
   - A word directly after another listed word gets a slightly darker shade, so 只是緩緩 reads as two words.
   - The highlight is display-only. The text, saving, undo and IME input are not affected.
   - Toggle it with **標示** in the toolbar or the checkbox in the 常用詞 view.
   - The status bar shows `常用詞 N 處` for the open manuscript; click it to open the 常用詞 view.
-- **The 常用詞 view** (工具 → 常用詞):
+- **The 常用詞 view** (修訂 → 工具 → 常用詞):
   - Each listed word shows how many times it appears in the whole book. Hover for the rate per 10,000 characters; red marks 5 or more per 10,000.
   - Add several words at once, separated by spaces or 、. Remove with ✕. 加入預設詞語 restores the starter list; 清空清單 empties it.
   - **自動找出的重複詞** lists two- to four-character phrases that appear at least 3 times in the book, most frequent first, with ＋ 加入 and 忽略. Ignored phrases (e.g. character names) are remembered and can be restored.
@@ -142,8 +179,11 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
  
 | Keys | Action |
 |---|---|
-| Enter / ×2 / ×3 | Paragraph / section break / new chapter |
+| Enter / ×2 / ×3 | Paragraph / section break / new chapter (in a quote: line / stanza gap / back to text) |
+| Tab / Shift+Tab | Quote on/off / quote off |
 | Alt+J (⌥J) | Send to 遺珠 |
+| Ctrl/⌘‑1 / 2 / 3 | 構思 / 寫作 / 修訂 workspace |
+| Ctrl/⌘‑Shift‑F | 專注 (focus mode), in 寫作 |
 | Ctrl/⌘‑Z, Ctrl/⌘‑Shift‑Z or Ctrl‑Y | Undo / redo |
 | Ctrl/⌘‑S | Save now |
  
@@ -158,6 +198,7 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 - **Large books**: books are read in full when opened. This is fine for normal novels, but very large books will open more slowly.
 ## Possible next steps (not done)
  
+- 構思: show a note beside the manuscript (side-by-side), including in 直排.
 - Count writing done outside the app (e.g. on the phone) in 每日字數, credited to the day the app next opens.
 - Sync through Dropbox or Google Drive, so the full app works on iPhone in the browser.
 - Package as a native iOS app (Capacitor) that reads the iCloud Drive folder; needs a Mac with Xcode and an Apple Developer account.
@@ -191,3 +232,19 @@ All on 2026-10-15.
     - **Cause**: a paragraph such as `◇◇◇` was saved as `\◇◇◇`, but on load only `\` before `#`, `*`, `-` or `_` was removed, so the backslash showed in the text.
     - **Fix**: the unescape now covers every character the break detector accepts (`◇ ◆ ＊ ※ ☆ ★ ○ ●` too). Checked with a save/load round trip. The accepted break characters are now listed under *Manuscript format*.
 13. **Open at the end of the file.** (2026-10-16) Opening a manuscript or note now places the cursor at the end and scrolls to it, instead of the start.
+14. **Workspaces and focus mode.** (2026-11-06)
+    - Three workspaces, 構思 (notes), 寫作 (manuscripts, focus mode) and 修訂 (常用詞 highlighting, 遺珠), switched in the sidebar or with Ctrl/⌘‑1/2/3. Each remembers its last open item per book. 常用詞 highlighting now shows only in 修訂.
+    - 專注 (focus mode) in 寫作: the current paragraph stays centred and the others fade out, in 橫排 and 直排. It changes one style rule instead of the manuscript's DOM, so saving, undo and IME are untouched.
+    - The sidebar toggle (☰) is unchanged.
+    - Tested in Chromium (browser-storage mode): switching and remembering, highlighting only in 修訂, centring in both directions, undo, and 注音-style composition while focus mode is on.
+15. **Note categories.** (2026-11-06)
+    - Subfolders of `筆記` are shown as categories in 構思. You can create, rename, fold and delete them, and drag notes between them (or use ⇄).
+    - `範本.md` in a category is the template for new notes there, with `{{名稱}}` replaced by the note's name. A suggested set 大綱・人物・設定 (with character-sheet and worldbuilding templates) is offered for existing books and created for new ones.
+    - Existing notes stay where they are and need no migration. Manuscripts are unchanged.
+    - Change detection covers notes in subfolders and new categories made elsewhere. Conflict copies still go directly into `筆記`.
+    - Tested in Chromium in browser-storage mode, and in folder mode against an in-memory stand-in for the folder API: create, template, drag, move, rename note and category, delete, fold, edits made elsewhere, and a conflict in a subfolder.
+16. **引文 (quotes).** (2026-11-06) Tab turns paragraphs into a quote for poems, found text, book quotations or spells, saved as Markdown `>` lines.
+    - Enter inside a quote: new line, then a stanza gap, then back to text. Shift+Tab or Backspace at the start turns it back.
+    - Shown in 楷體 with an indent and a faint side line, in both writing directions.
+    - Normal paragraphs that start with `>` are now escaped as `\>`.
+    - Tested in Chromium: Tab and Shift+Tab, the Enter sequence, save/load round trip, escaping, counts, undo, pasting Markdown, and that Tab does nothing during 注音 composition.

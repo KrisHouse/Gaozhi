@@ -14,6 +14,7 @@
   --accent:#9b3b2a; --side:#e9e4d9; --hover:#ddd6c8;
   --serif:"Noto Serif TC","Source Han Serif TC","Songti TC","PMingLiU","MingLiU",serif;
   --sans:"Noto Sans TC","Source Han Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --kai:"BiauKai","標楷體","Kaiti TC","STKaiti","DFKai-SB","TW-Kai",var(--serif);
   --fs:20px; --mark:rgba(232,176,48,.34); color-scheme:light;
 }
 /* ── 配色 ── */
@@ -55,8 +56,8 @@ button:hover{background:var(--hover)}
 [hidden]{display:none!important}
 
 #app{display:grid;grid-template-columns:250px 1fr;height:100vh}
-body.focus #app{grid-template-columns:0 1fr}
-body.focus #side{visibility:hidden}
+body.noside #app{grid-template-columns:0 1fr}
+body.noside #side{visibility:hidden}
 
 /* ── 側欄 ── */
 #side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
@@ -73,6 +74,18 @@ body.focus #side{visibility:hidden}
 .sh button{padding:0 6px;font-size:15px;line-height:1.4}
 ul{list-style:none;margin:0;padding:0}
 .files{max-height:28vh;overflow:auto}
+#notesList{max-height:none}
+.sh .btns{display:flex;gap:2px}
+#newFolder{font-size:12px;letter-spacing:0}
+#notesList li.dir{margin-top:6px;color:var(--muted);font-size:12px;letter-spacing:.1em}
+#notesList li.dir .tw{flex:none;width:1em;font-size:9px}
+#notesList li.dir .c{color:var(--muted);font-size:11px;letter-spacing:0}
+#notesList li.sub{padding-left:24px}
+#notesList li.tpl .n{color:var(--muted)}
+#notesList li.drop,#notesHead.drop{outline:1px dashed var(--accent);outline-offset:-2px;border-radius:6px}
+#notesList li.suggest{cursor:default}
+#notesList li.suggest:hover{background:none}
+#notesList li.suggest button{padding:0;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .files li,#outline li{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:6px;cursor:pointer}
 .files li:hover,#outline li:hover{background:var(--hover)}
 .files li.on{background:var(--hover);color:var(--accent);font-weight:500}
@@ -113,6 +126,10 @@ body.sans .editor,body.sans #notes{font-family:var(--sans)}
 body.noindent .editor p{text-indent:0}
 .editor h1{font-size:1.3em;font-weight:600;letter-spacing:.12em;margin-block:2.4em 1.3em;text-indent:0}
 .editor h1:first-child{margin-block-start:0}
+/* 引文（詩、書中引句、咒語……）：Markdown 的 > 區塊；楷體、整段縮排，前面一條淡線，每行一句 */
+.editor p.q{text-indent:0!important;margin-inline-start:1em;padding-inline-start:2em;border-inline-start:2px solid var(--line);font-family:var(--kai)}
+.editor :not(p.q)+p.q{margin-block-start:.9em}
+.editor p.q+:not(p.q){margin-block-start:.9em}
 .editor .sec{margin-block:1.1em;text-align:center;color:var(--muted);user-select:none;text-indent:0;letter-spacing:0}
 .editor .sec::before{content:"◇　◇　◇"}
 .editor.blank p:first-child::before{content:"開始書寫……（在開頭按 Enter 可先加章名）";color:var(--muted)}
@@ -212,11 +229,23 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
 .reps button.add{color:var(--accent)}
 #cntWords{cursor:pointer}
 
+/* ── 工作區 ── */
+.brand .seg{font-family:var(--sans);font-size:12px;font-weight:400;letter-spacing:0}
+.brand .seg button{padding:2px 8px}
+body[data-ws=plan] [data-in]:not([data-in~=plan]),
+body[data-ws=write] [data-in]:not([data-in~=write]),
+body[data-ws=edit] [data-in]:not([data-in~=edit]){display:none!important}
+/* ── 專注模式：目前段落置中，其他淡出（只改樣式，不動稿件 DOM） ── */
+.editor>*{transition:opacity .3s}
+body.zen .editor{padding-block:45vh}
+body.v.zen .editor{padding-block:50vw}
+body.zen .editor>*{opacity:.22}
+
 #toast{position:fixed;bottom:46px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:8px;font-size:13px;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.18);max-width:calc(100% - 32px)}
 
 @media (max-width:760px){
   #app{grid-template-columns:0 1fr} #side{visibility:hidden}
-  body.focus #app{grid-template-columns:230px 1fr} body.focus #side{visibility:visible}
+  body.noside #app{grid-template-columns:230px 1fr} body.noside #side{visibility:visible}
   #punct{order:3;flex-basis:100%}
 }
 </style>
@@ -224,24 +253,24 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
 <body>
 <div id="app">
   <aside id="side">
-    <div class="brand"><span>稿紙</span></div>
+    <div class="brand"><span>稿紙</span><div class="seg" id="wsSeg"><button data-w="plan" title="構思：大綱、人物、設定等筆記（Ctrl/⌘ 1）">構思</button><button data-w="write" title="寫作：稿件與專注模式（Ctrl/⌘ 2）">寫作</button><button data-w="edit" title="修訂：常用詞標示與遺珠（Ctrl/⌘ 3）">修訂</button></div></div>
     <div class="row"><select id="bookSel" title="選擇書籍"></select><button id="newBook" title="新增書籍">＋</button></div>
     <div id="bookStat"></div>
     <div class="bookActions"><button id="exportBook" title="把全部稿件合併成一個 Markdown 檔下載">匯出全書</button></div>
-    <div class="sect"><div class="sh"><span>稿件</span><button data-new="ms" title="新增稿件">＋</button></div><ul id="msList" class="files"></ul></div>
-    <div class="sect"><div class="sh"><span>筆記</span><button data-new="notes" title="新增筆記">＋</button></div><ul id="notesList" class="files"></ul></div>
-    <div class="sect"><div class="sh"><span>工具</span></div><ul class="files">
-      <li class="tool" data-kind="gems" id="toolGems" title="捨不得刪的段落"><span class="n">遺珠</span><span class="c" id="gemCount"></span></li>
+    <div class="sect" data-in="write edit"><div class="sh"><span>稿件</span><button data-new="ms" title="新增稿件">＋</button></div><ul id="msList" class="files"></ul></div>
+    <div class="sect grow" data-in="plan"><div class="sh" id="notesHead" title="可以把筆記拖到這裡，移出分類"><span>筆記</span><span class="btns"><button id="newFolder" title="新增分類（筆記裡的子資料夾）">＋分類</button><button data-new="notes" title="新增筆記">＋</button></span></div><ul id="notesList" class="files"></ul></div>
+    <div class="sect" data-in="write edit"><div class="sh"><span>工具</span></div><ul class="files">
+      <li class="tool" data-in="edit" data-kind="gems" id="toolGems" title="捨不得刪的段落"><span class="n">遺珠</span><span class="c" id="gemCount"></span></li>
       <li class="tool" data-kind="stats" id="toolStats" title="每日寫作字數"><span class="n">每日字數</span><span class="c" id="todayMini"></span></li>
-      <li class="tool" data-kind="words" id="toolWords" title="容易重複使用的詞語"><span class="n">常用詞</span><span class="c" id="wordsMini"></span></li>
+      <li class="tool" data-in="edit" data-kind="words" id="toolWords" title="容易重複使用的詞語"><span class="n">常用詞</span><span class="c" id="wordsMini"></span></li>
     </ul></div>
-    <div class="sect grow"><div class="sh"><span>目錄</span></div><ul id="outline"></ul></div>
+    <div class="sect grow" data-in="write edit"><div class="sh"><span>目錄</span></div><ul id="outline"></ul></div>
     <div class="foot"><span id="storeName"></span><button id="switchStore">更換</button></div>
   </aside>
 
   <main>
     <header id="bar">
-      <button id="focusBtn" title="隱藏／顯示側欄">☰</button>
+      <button id="sideBtn" title="隱藏／顯示側欄">☰</button>
       <div id="docTitle"></div>
       <div id="punct"></div>
       <div class="tools">
@@ -249,8 +278,9 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
         <button id="fontBtn" title="切換字體">明體</button>
         <button id="fsDown" title="縮小字級">A−</button><button id="fsUp" title="放大字級">A＋</button>
         <button id="indentBtn" title="段首縮排兩字">縮排</button>
-        <button id="hlBtn" title="標示常用詞">標示</button>
-        <button id="gemBtn" title="把選取文字或游標所在段落移到遺珠（Alt+J／⌥J）">送遺珠</button>
+        <button id="hlBtn" data-in="edit" title="標示常用詞">標示</button>
+        <button id="zenBtn" data-in="write" title="專注模式：目前段落保持在畫面中央，其他段落淡出（Ctrl/⌘ Shift F）">專注</button>
+        <button id="gemBtn" data-in="write edit" title="把選取文字或游標所在段落移到遺珠（Alt+J／⌥J）">送遺珠</button>
         <button id="exportBtn" title="下載目前檔案">匯出</button>
         <div class="pop-wrap"><button id="themeBtn" title="配色">配色</button><div id="themePop" class="pop" hidden></div></div>
       </div>
@@ -264,13 +294,14 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
     <div id="empty"><div id="emptyMsg"></div><button id="emptyBtn"></button></div>
 
     <footer id="status">
-      <span id="cntChapter"></span><span id="cntDoc"></span><span id="cntBook"></span><span id="cntToday" title="查看每日字數"></span><span id="cntSel"></span><span id="cntWords" title="查看常用詞"></span>
+      <span id="cntChapter"></span><span id="cntDoc"></span><span id="cntBook"></span><span id="cntToday" title="查看每日字數"></span><span id="cntSel"></span><span id="cntWords" data-in="edit" title="查看常用詞"></span>
       <span id="saveState"></span>
     </footer>
   </main>
 </div>
 
 <div id="toast" hidden></div>
+<style id="zenRule"></style>
 <div id="welcome" hidden>
   <div class="card">
     <h1>稿紙</h1>
@@ -285,8 +316,10 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
       <kbd>Enter</kbd> 換段<br>
       連按兩次 <kbd>Enter</kbd>：插入分節符 ◇　◇　◇<br>
       連按三次 <kbd>Enter</kbd>：開新章<br>
+      <kbd>Tab</kbd>：段落變成引文（詩、引句），再按一次變回正文<br>
       在稿件最開頭的空行按 <kbd>Enter</kbd>：直接建立章名<br>
       <kbd>Alt J</kbd>／<kbd>⌥J</kbd>：把段落或選取文字移到遺珠<br>
+      <kbd>Ctrl/⌘ 1／2／3</kbd>：切換構思／寫作／修訂工作區<br>
       <kbd>Ctrl/⌘ S</kbd> 立即儲存（平時會自動儲存）
     </div>
   </div>
@@ -299,7 +332,8 @@ const editor = $('#editor'), scroller = $('#scroller'), notesEl = $('#notes');
 const KINDS = { ms: '稿件', notes: '筆記' };
 const collator = new Intl.Collator('zh-Hant-TW', { numeric: true });
 const sortNames = a => a.sort(collator.compare);
-const baseName = f => f.replace(/\.(md|markdown|txt)$/i, '');
+const baseName = f => f.replace(/^.*\//, '').replace(/\.(md|markdown|txt)$/i, '');   // 只取檔名（筆記可以在分類資料夾裡）
+const folderOf = f => f.includes('/') ? f.slice(0, f.indexOf('/')) : '';
 const sanitize = s => (s || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/^\.+/, '').trim();
 const fmt = n => n.toLocaleString('zh-Hant-TW');
 const CFG = '.稿紙設定.json';
@@ -307,8 +341,9 @@ const CFG = '.稿紙設定.json';
 const state = {
   store: null, book: null, kind: null, file: null, dirty: false,
   counts: {}, live: null, msFiles: [], curChap: null,
-  settings: { mode: 'h', font: 'serif', fs: 20, indent: true, metric: 'all', goal: 0, theme: 'auto', hl: true },
-  gems: [], meta: null,
+  settings: { mode: 'h', font: 'serif', fs: 20, indent: true, metric: 'all', goal: 0, theme: 'auto', hl: true, zen: false },
+  ws: 'write',
+  gems: [], meta: null, noteFiles: [], noteDirs: [],
 };
 let composing = false;
 
@@ -330,22 +365,51 @@ class FSStore {
     await b.getDirectoryHandle(KINDS.ms, { create: true });
     await b.getDirectoryHandle(KINDS.notes, { create: true });
   }
+  // 檔名可以帶資料夾（筆記的分類，例如「人物/林曉.md」）
+  async at(book, kind, f, create) {
+    let d = await this.dir(book, kind); const ps = f.split('/'), n = ps.pop();
+    for (const x of ps) d = await d.getDirectoryHandle(x, { create });
+    return [d, n];
+  }
   async list(book, kind) {
-    const d = await this.dir(book, kind), out = [];
-    for await (const [n, h] of d.entries()) if (h.kind === 'file' && /\.(md|markdown|txt)$/i.test(n)) out.push(n);
+    const out = [];
+    const walk = async (d, pre, depth) => {
+      for await (const [n, h] of d.entries()) {
+        if (h.kind === 'file' && /\.(md|markdown|txt)$/i.test(n)) out.push(pre + n);
+        else if (h.kind === 'directory' && kind === 'notes' && depth < 3 && !n.startsWith('.')) await walk(h, pre + n + '/', depth + 1);
+      }
+    };
+    await walk(await this.dir(book, kind), '', 0);
     return sortNames(out);
   }
-  async read(book, kind, f) { const h = await (await this.dir(book, kind)).getFileHandle(f); return (await h.getFile()).text(); }
+  async read(book, kind, f) { const [d, n] = await this.at(book, kind, f); return (await (await d.getFileHandle(n)).getFile()).text(); }
   async write(book, kind, f, text) {
-    const h = await (await this.dir(book, kind)).getFileHandle(f, { create: true });
+    const [d, n] = await this.at(book, kind, f, true), h = await d.getFileHandle(n, { create: true });
     const w = await h.createWritable(); await w.write(text); await w.close();
   }
-  async exists(book, kind, f) { try { await (await this.dir(book, kind)).getFileHandle(f); return true; } catch { return false; } }
+  async exists(book, kind, f) { try { const [d, n] = await this.at(book, kind, f); await d.getFileHandle(n); return true; } catch { return false; } }
   async stat(book, kind, f) {
-    try { const file = await (await (await this.dir(book, kind)).getFileHandle(f)).getFile(); return { m: file.lastModified, s: file.size }; }
+    try { const [d, n] = await this.at(book, kind, f); const file = await (await d.getFileHandle(n)).getFile(); return { m: file.lastModified, s: file.size }; }
     catch { return null; }
   }
-  async remove(book, kind, f) { await (await this.dir(book, kind)).removeEntry(f); }
+  async remove(book, kind, f) { const [d, n] = await this.at(book, kind, f); await d.removeEntry(n); }
+  // 筆記的分類資料夾（只有第一層）
+  async folders(book) {
+    const d = await this.dir(book, 'notes'), out = [];
+    for await (const [n, h] of d.entries()) if (h.kind === 'directory' && !n.startsWith('.')) out.push(n);
+    return sortNames(out);
+  }
+  async mkdir(book, n) { await (await this.dir(book, 'notes')).getDirectoryHandle(n, { create: true }); }
+  async rmdir(book, n) {                           // 只刪空的資料夾（.DS_Store 之類的隱藏檔不算）
+    const p = await this.dir(book, 'notes'), d = await p.getDirectoryHandle(n);
+    for await (const [x] of d.entries()) if (!x.startsWith('.')) throw new Error('資料夾不是空的');
+    await p.removeEntry(n, { recursive: true });
+  }
+  async folderPlain(book, n) {                     // 只有筆記檔、沒有子資料夾或其他檔案，才能在這裡改名
+    const d = await (await this.dir(book, 'notes')).getDirectoryHandle(n);
+    for await (const [x, h] of d.entries()) { if (x.startsWith('.')) continue; if (h.kind === 'directory' || !/\.(md|markdown|txt)$/i.test(x)) return false; }
+    return true;
+  }
   async rename(book, kind, f, nf) { const t = await this.read(book, kind, f); await this.write(book, kind, nf, t); await this.remove(book, kind, f); }
   // 寫作資料夾本身的設定檔（所有書共用，例如常用詞清單）
   async readCfg() { try { return await (await (await this.root.getFileHandle(CFG)).getFile()).text(); } catch { return ''; } }
@@ -359,10 +423,19 @@ class LocalStore {
   async createBook(b) { this.db[b] ??= { ms: {}, notes: {}, root: {} }; this.persist(); }
   async list(b, k) { return sortNames(Object.keys(this.db[b]?.[k] || {})); }
   async read(b, k, f) { return this.db[b]?.[k]?.[f] ?? ''; }
-  async write(b, k, f, t) { this.db[b] ??= { ms: {}, notes: {} }; this.db[b][k] ??= {}; this.db[b][k][f] = t; this.persist(); }
+  async write(b, k, f, t) {
+    this.db[b] ??= { ms: {}, notes: {} }; this.db[b][k] ??= {}; this.db[b][k][f] = t;
+    if (k === 'notes' && folderOf(f)) { const a = (this.db[b].dirs ??= []); if (!a.includes(folderOf(f))) a.push(folderOf(f)); }
+    this.persist();
+  }
   async exists(b, k, f) { return f in (this.db[b]?.[k] || {}); }
   async remove(b, k, f) { delete this.db[b][k][f]; this.persist(); }
-  async rename(b, k, f, nf) { this.db[b][k][nf] = this.db[b][k][f]; delete this.db[b][k][f]; this.persist(); }
+  async rename(b, k, f, nf) { const t = this.db[b][k][f]; delete this.db[b][k][f]; await this.write(b, k, nf, t); }
+  notesIn(b, d) { return Object.keys(this.db[b]?.notes || {}).filter(f => f.startsWith(d + '/')); }
+  async folders(b) { const s = new Set(this.db[b]?.dirs || []); for (const f of Object.keys(this.db[b]?.notes || {})) if (folderOf(f)) s.add(folderOf(f)); return sortNames([...s]); }
+  async mkdir(b, d) { const a = (this.db[b].dirs ??= []); if (!a.includes(d)) a.push(d); this.persist(); }
+  async rmdir(b, d) { if (this.notesIn(b, d).length) throw new Error('資料夾不是空的'); this.db[b].dirs = (this.db[b].dirs || []).filter(x => x !== d); this.persist(); }
+  async folderPlain(b, d) { return !this.notesIn(b, d).some(f => f.slice(d.length + 1).includes('/')); }
   async readCfg() { return localStorage.getItem('gaozhi-local-cfg') || ''; }
   async writeCfg(text) { localStorage.setItem('gaozhi-local-cfg', text); }
 }
@@ -392,10 +465,14 @@ const HEADING = /^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$/;
 function newP(text) { const p = document.createElement('p'); if (text) p.textContent = text; else p.innerHTML = '<br>'; return p; }
 function makeSec() { const d = document.createElement('div'); d.className = 'sec'; d.contentEditable = 'false'; return d; }
 function makeH(text) { const h = document.createElement('h1'); h.textContent = text; return h; }
-const unesc = l => l.replace(/^(\s*)\\(?=[#*\-_◇◆＊※☆★○●])/, '$1');
+const unesc = l => l.replace(/^(\s*)\\(?=[#>*\-_◇◆＊※☆★○●])/, '$1');
+const QUOTE = /^\s{0,3}>\s?/;                    // 引文行：> 內容；只有 > 的空行是詩的分段
+const isQ = el => !!el && el.tagName === 'P' && el.classList.contains('q');
+function newQ(text) { const p = newP(text); p.className = 'q'; return p; }
 
 function lineBlock(line) {
   if (line.trim() === '') return null;
+  if (QUOTE.test(line)) return newQ(unesc(line.replace(QUOTE, '')));
   const m = line.match(HEADING);
   if (m) return makeH(m[1]);
   if (BREAK.test(line)) return makeSec();
@@ -406,21 +483,30 @@ function load(md) {
   for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) { const b = lineBlock(ln); if (b) editor.append(b); }
   normalize();
 }
-function escLine(t) { return (/^\s*#/.test(t) || BREAK.test(t)) ? t.replace(/^(\s*)/, '$1\\') : t; }
+function escLine(t) { return (/^\s*[#>]/.test(t) || BREAK.test(t)) ? t.replace(/^(\s*)/, '$1\\') : t; }
 function serialize() {
-  const out = [];
+  const out = []; let q = null;                   // q：正在累積的引文區塊（各行之間只換一行）
+  const endQ = () => { if (!q) return; while (q.length && q[q.length - 1] === '>') q.pop(); if (q.length) out.push(q.join('\n')); q = null; };
   for (const el of editor.children) {
+    if (isQ(el)) {
+      const t = el.textContent;
+      if (t.trim()) (q ??= []).push('> ' + escLine(t));
+      else if (q?.length && q[q.length - 1] !== '>') q.push('>');
+      continue;
+    }
+    endQ();
     if (el.tagName === 'H1') out.push('# ' + (el.textContent.trim() || '未命名章節'));
     else if (el.classList.contains('sec')) { if (out.length && out[out.length - 1] !== '* * *') out.push('* * *'); }
     else { const t = el.textContent; if (t.trim()) out.push(escLine(t)); }
   }
+  endQ();
   return out.join('\n\n') + '\n';
 }
 function countMd(md) {
   let all = 0, np = 0;
   for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) {
     if (!ln.trim() || HEADING.test(ln) || BREAK.test(ln)) continue;
-    const c = count(unesc(ln)); all += c.all; np += c.np;
+    const c = count(unesc(ln.replace(QUOTE, ''))); all += c.all; np += c.np;
   }
   return { all, np };
 }
@@ -457,7 +543,7 @@ function setCaret(c) {
 }
 function revealCaret() { const b = currentBlock(); b?.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
 
-/* 保持結構乾淨：只允許 p / h1 / div.sec */
+/* 保持結構乾淨：只允許 p（含引文 p.q）/ h1 / div.sec */
 function fixEmpty(el) {
   if (el.textContent !== '') el.querySelectorAll('br').forEach(br => br.remove());
   else if (!el.querySelector('br')) el.innerHTML = '<br>';
@@ -482,7 +568,9 @@ function normalize() {
       const p = document.createElement('p'); n.before(p); while (n.firstChild) p.append(n.firstChild); n.remove();
       flatten(p); fixEmpty(p); touched = true; continue;
     }
-    if (n.attributes.length) { [...n.attributes].forEach(a => n.removeAttribute(a.name)); }
+    const q = isQ(n);                              // 引文只保留 class="q"
+    for (const a of [...n.attributes]) if (!(q && a.name === 'class')) n.removeAttribute(a.name);
+    if (q && n.className !== 'q') n.className = 'q';
     if (flatten(n)) touched = true;
     if (n.tagName === 'P' && n.textContent === '' && !n.querySelector('br')) n.innerHTML = '<br>';
   }
@@ -529,7 +617,7 @@ function splitBlock(b) {
   const r = getSelection().getRangeAt(0);
   const tail = document.createRange(); tail.setStart(r.endContainer, r.endOffset); tail.setEnd(b, b.childNodes.length);
   const frag = tail.extractContents();
-  const p = document.createElement('p'); p.append(frag); flatten(p);
+  const p = document.createElement('p'); if (isQ(b)) p.className = 'q'; p.append(frag); flatten(p);
   fixEmpty(p); fixEmpty(b); b.after(p); placeCaret(p, false);
 }
 function onEnter() {
@@ -543,6 +631,15 @@ function onEnter() {
     placeCaret(n, false); afterStruct(); return;
   }
   if (b.tagName !== 'P') return;
+
+  if (isQ(b)) {                                    // 引文：一次換行、兩次分段（空一行）、三次回到正文
+    if (b.textContent !== '') { splitBlock(b); afterStruct(); return; }
+    const prev = b.previousElementSibling;
+    if (isQ(prev) && prev.textContent === '') { prev.remove(); b.classList.remove('q'); }
+    else if (!isQ(prev)) b.classList.remove('q');
+    else { const n = newQ(); b.after(n); placeCaret(n, false); }
+    afterStruct(); return;
+  }
 
   if (b.textContent === '') {
     const prev = b.previousElementSibling;
@@ -568,6 +665,7 @@ function onBackspace() {
   const c = getCaret(); if (!c || c.off !== 0) return false;
   const prev = b.previousElementSibling;
   if (b.tagName === 'H1') { const p = newP(b.textContent); b.replaceWith(p); placeCaret(p, false); afterStruct(); return true; }
+  if (isQ(b) && !isQ(prev)) { b.classList.remove('q'); afterStruct(); return true; }   // 引文第一行開頭：變回正文
   if (prev && prev.classList.contains('sec')) { prev.remove(); afterStruct(); return true; }
   if (prev && prev.tagName === 'H1') { if (b.textContent === '' && b.nextElementSibling) b.remove(); placeCaret(prev, true); afterStruct(); return true; }
   if (!prev) return true;
@@ -610,7 +708,23 @@ editor.addEventListener('keydown', e => {
   else if (mod && k === 'y') { e.preventDefault(); redo(); }
   else if (mod && ['b', 'i', 'u'].includes(k)) e.preventDefault();
   else if (e.altKey && !mod && e.code === 'KeyJ') { e.preventDefault(); sendToGems(); }
+  else if (e.key === 'Tab' && !mod && !e.altKey) {
+    e.preventDefault();
+    if (e.isComposing || composing || e.keyCode === 229) return;   // 選字中不動
+    toggleQuote(e.shiftKey ? false : null);
+  }
 });
+// Tab：把游標所在段落（或選取範圍內的段落）變成引文，再按一次變回正文；Shift+Tab 一定變回正文
+function toggleQuote(on) {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return;
+  const r = s.getRangeAt(0);
+  let ps = r.collapsed ? [currentBlock()] : [...editor.children].filter(el => r.intersectsNode(el));
+  ps = ps.filter(el => el && el.tagName === 'P');
+  if (!ps.length) return;
+  if (on === null) on = !ps.every(isQ);
+  for (const p of ps) p.classList.toggle('q', on);
+  afterStruct();
+}
 editor.addEventListener('input', () => { if (composing) { changed(); return; } normalize(); snap(); changed(); });
 editor.addEventListener('paste', e => { e.preventDefault(); insertPlain(e.clipboardData.getData('text/plain') || ''); });
 editor.addEventListener('drop', e => e.preventDefault());
@@ -724,7 +838,7 @@ let rafSel = 0;
 document.addEventListener('selectionchange', () => {
   if (rafSel) return;
   rafSel = requestAnimationFrame(() => {
-    rafSel = 0; updateSel();
+    rafSel = 0; updateSel(); zenFollow();
     if (state.kind === 'ms') { const ce = currentChapterEl(); if (ce !== undefined && ce !== state.curChap) { state.curChap = ce; scheduleStats(); } }
   });
 });
@@ -756,7 +870,7 @@ window.addEventListener('beforeunload', e => { if (state.dirty) { flush(true); e
 function showEmpty(msg, label, fn) {
   hideViews(); $('#empty').hidden = false;
   $('#emptyMsg').textContent = msg; const b = $('#emptyBtn'); b.hidden = !label; b.textContent = label || ''; b.onclick = fn;
-  $('#docTitle').textContent = ''; refreshStats();
+  $('#docTitle').textContent = ''; refreshStats(); updateZen();
 }
 async function refreshBooks() {
   const sel = $('#bookSel'), books = await state.store.books(); sel.innerHTML = '';
@@ -782,35 +896,144 @@ async function openBook(name) {
   await openDefault();
 }
 async function renderFiles() {
-  for (const kind of ['ms', 'notes']) {
-    const ul = $(kind === 'ms' ? '#msList' : '#notesList'); ul.innerHTML = '';
-    const files = await state.store.list(state.book, kind);
-    if (kind === 'ms') state.msFiles = files; else state.noteFiles = files;
-    if (!files.length) ul.innerHTML = '<li class="none">（空）</li>';
-    for (const f of files) {
-      const li = document.createElement('li'); li.dataset.kind = kind; li.dataset.file = f;
-      li.innerHTML = '<span class="n"></span><span class="a"><button title="重新命名">✎</button><button title="刪除">✕</button></span>';
-      li.querySelector('.n').textContent = baseName(f);
-      li.onclick = () => openFile(kind, f);
-      const [rb, db] = li.querySelectorAll('button');
-      rb.onclick = e => { e.stopPropagation(); renameFile(kind, f); };
-      db.onclick = e => { e.stopPropagation(); deleteFile(kind, f); };
-      ul.append(li);
-    }
-  }
+  const ul = $('#msList'); ul.innerHTML = '';
+  state.msFiles = await state.store.list(state.book, 'ms');
+  if (!state.msFiles.length) ul.innerHTML = '<li class="none">（空）</li>';
+  for (const f of state.msFiles) ul.append(fileLi('ms', f));
+  state.noteFiles = await state.store.list(state.book, 'notes');
+  state.noteDirs = await state.store.folders(state.book);
+  renderNotes();
   markActive();
 }
-function markActive() { document.querySelectorAll('#side li[data-kind]').forEach(li => li.classList.toggle('on', li.dataset.kind === state.kind && (li.classList.contains('tool') || li.dataset.file === state.file))); }
+function fileLi(kind, f, sub) {
+  const li = document.createElement('li'); li.dataset.kind = kind; li.dataset.file = f;
+  if (sub) li.classList.add('sub');
+  if (kind === 'notes' && baseName(f) === TPL) { li.classList.add('tpl'); li.title = '這個分類的範本：在這裡新增筆記時，會以它的內容開頭'; }
+  li.innerHTML = '<span class="n"></span><span class="a">' + (kind === 'notes' ? '<button title="移到其他分類（也可以直接拖曳）">⇄</button>' : '') +
+    '<button title="重新命名">✎</button><button title="刪除">✕</button></span>';
+  li.querySelector('.n').textContent = baseName(f);
+  li.onclick = () => openFile(kind, f);
+  const bs = [...li.querySelectorAll('button')], db = bs.pop(), rb = bs.pop(), mb = bs.pop();
+  rb.onclick = e => { e.stopPropagation(); renameFile(kind, f); };
+  db.onclick = e => { e.stopPropagation(); deleteFile(kind, f); };
+  if (mb) {
+    mb.onclick = e => { e.stopPropagation(); askMove(f); };
+    li.draggable = true;
+    li.addEventListener('dragstart', e => { e.dataTransfer.setData(DRAG, f); e.dataTransfer.effectAllowed = 'move'; });
+  }
+  return li;
+}
+
+/* ════════ 筆記分類（筆記資料夾裡的子資料夾） ════════ */
+const TPL = '範本', DRAG = 'text/x-gaozhi-note';
+const TEMPLATES = {
+  人物: '# {{名稱}}\n\n年齡：\n\n身分：\n\n## 外貌\n\n## 個性\n\n## 想要的與害怕的\n\n## 人際關係\n\n## 過去\n',
+  設定: '# {{名稱}}\n\n## 概述\n\n## 細節\n\n## 和故事的關係\n',
+};
+const SUGGESTED = ['大綱', '人物', '設定'];
+async function createSuggested(store, book) {
+  for (const d of SUGGESTED) {
+    await store.mkdir(book, d);
+    const t = `${d}/${TPL}.md`;
+    if (TEMPLATES[d] && !(await store.exists(book, 'notes', t))) await store.write(book, 'notes', t, TEMPLATES[d]);
+  }
+}
+const closedKey = () => 'gaozhi-closed:' + state.book;
+function closedDirs() { try { return new Set(JSON.parse(localStorage.getItem(closedKey())) || []); } catch { return new Set(); } }
+function setClosed(set) { try { localStorage.setItem(closedKey(), JSON.stringify([...set])); } catch {} }
+const tplFirst = a => a.sort((x, y) => (baseName(y) === TPL) - (baseName(x) === TPL) || collator.compare(x, y));
+function dropTarget(el, dir) {
+  el.addEventListener('dragover', e => { if (e.dataTransfer.types.includes(DRAG)) { e.preventDefault(); el.classList.add('drop'); } });
+  el.addEventListener('dragleave', () => el.classList.remove('drop'));
+  el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('drop'); const f = e.dataTransfer.getData(DRAG); if (f) moveNote(f, dir); });
+}
+function renderNotes() {
+  const ul = $('#notesList'); ul.innerHTML = '';
+  const files = state.noteFiles, groups = new Map(state.noteDirs.map(d => [d, []])), root = [];
+  for (const f of files) { const d = folderOf(f); if (!d) root.push(f); else { if (!groups.has(d)) groups.set(d, []); groups.get(d).push(f); } }
+  for (const f of tplFirst(root)) ul.append(fileLi('notes', f));
+  const closed = closedDirs();
+  for (const d of sortNames([...groups.keys()])) {
+    const list = tplFirst(groups.get(d)), n = list.filter(f => baseName(f) !== TPL).length;
+    const open = !closed.has(d);
+    const li = document.createElement('li'); li.className = 'dir'; li.title = '點一下展開／收合；可以把筆記拖到這裡';
+    li.innerHTML = `<span class="tw">${open ? '▼' : '▶'}</span><span class="n"></span><span class="c">${n || ''}</span><span class="a"><button title="在這個分類新增筆記">＋</button><button title="重新命名分類">✎</button><button title="刪除分類">✕</button></span>`;
+    li.querySelector('.n').textContent = d;
+    li.onclick = () => { const c = closedDirs(); open ? c.add(d) : c.delete(d); setClosed(c); renderNotes(); markActive(); };
+    const [nb, rb, db] = li.querySelectorAll('button');
+    nb.onclick = e => { e.stopPropagation(); newFile('notes', d); };
+    rb.onclick = e => { e.stopPropagation(); renameFolder(d); };
+    db.onclick = e => { e.stopPropagation(); deleteFolder(d); };
+    dropTarget(li, d); ul.append(li);
+    if (!open) continue;
+    for (const f of list) ul.append(fileLi('notes', f, true));
+    if (!list.length) { const e = document.createElement('li'); e.className = 'none sub'; e.textContent = '（空）'; ul.append(e); }
+  }
+  if (!files.length && !groups.size) ul.innerHTML = '<li class="none">（空）</li>';
+  if (!state.noteDirs.length) {
+    const li = document.createElement('li'); li.className = 'suggest';
+    li.innerHTML = '<button title="在筆記資料夾裡建立這三個子資料夾，人物和設定附有範本">建立建議分類：大綱・人物・設定</button>';
+    li.querySelector('button').onclick = async () => { await createSuggested(state.store, state.book); await renderFiles(); };
+    ul.append(li);
+  }
+}
+dropTarget($('#notesHead'), '');
+async function askMove(f) {
+  const dirs = state.noteDirs, cur = folderOf(f);
+  const a = prompt(`把「${baseName(f)}」移到哪個分類？\n輸入分類名稱；留空表示不分類。` + (dirs.length ? `\n現有分類：${dirs.join('、')}` : ''), cur);
+  if (a === null) return;
+  await moveNote(f, sanitize(a));
+}
+async function moveNote(f, dir) {
+  const nf = (dir ? dir + '/' : '') + f.split('/').pop();
+  if (nf === f) return;
+  if (await state.store.exists(state.book, 'notes', nf)) return alert(`「${dir || '筆記'}」裡已經有同名的筆記了。`);
+  if (dir && !state.noteDirs.includes(dir)) await state.store.mkdir(state.book, dir);
+  await moveFile('notes', f, nf);
+  if (dir) { const c = closedDirs(); c.delete(dir); setClosed(c); }
+  await renderFiles();
+}
+async function newFolder() {
+  if (!state.book) return;
+  const n = sanitize(prompt('分類名稱（會在「筆記」資料夾裡建立同名的子資料夾）', '')); if (!n) return;
+  if (state.noteDirs.includes(n)) return alert('已經有同名的分類了。');
+  await state.store.mkdir(state.book, n); await renderFiles();
+}
+async function renameFolder(d) {
+  const n = sanitize(prompt('分類的新名稱', d)); if (!n || n === d) return;
+  if (state.noteDirs.includes(n)) return alert('已經有同名的分類了。');
+  if (!(await state.store.folderPlain(state.book, d))) return alert('這個資料夾裡有子資料夾或其他檔案，請在 Finder／檔案總管中改名。');
+  await flush(true);
+  await state.store.mkdir(state.book, n);
+  for (const f of (await state.store.list(state.book, 'notes')).filter(f => folderOf(f) === d)) await moveFile('notes', f, n + f.slice(d.length));
+  try { await state.store.rmdir(state.book, d); } catch (e) { console.error(e); }
+  const c = closedDirs(); if (c.delete(d)) c.add(n); setClosed(c);
+  await renderFiles();
+}
+async function deleteFolder(d) {
+  if (state.noteFiles.some(f => folderOf(f) === d)) return alert(`「${d}」裡還有筆記（包括範本），請先移走或刪除。`);
+  if (!confirm(`確定要刪除分類「${d}」嗎？`)) return;
+  try { await state.store.rmdir(state.book, d); } catch { return alert('資料夾裡還有其他檔案，請在 Finder／檔案總管中處理。'); }
+  await renderFiles();
+}
+$('#newFolder').onclick = newFolder;
+function markActive() { updateZen(); document.querySelectorAll('#side li[data-kind]').forEach(li => li.classList.toggle('on', li.dataset.kind === state.kind && (li.classList.contains('tool') || li.dataset.file === state.file))); }
 function hideViews() { for (const id of ['#scroller', '#notes', '#empty', '#gemsView', '#statsView', '#wordsView']) $(id).hidden = true; }
 async function openDefault() {
-  let last = null; try { last = JSON.parse(localStorage.getItem('gaozhi-last:' + state.book)); } catch {}
+  const ws = state.ws, ok = WS_KINDS[ws];
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem(`gaozhi-last:${state.book}:${ws}`) || localStorage.getItem('gaozhi-last:' + state.book)); } catch {}
+  if (!ok.includes(last?.kind)) last = null;
   if (last?.kind === 'gems') return openGems();
   if (last?.kind === 'stats') return openStats();
   if (last?.kind === 'words') return openWords();
   const lists = { ms: state.msFiles, notes: state.noteFiles || [] };
   if (last && lists[last.kind]?.includes(last.file)) return openFile(last.kind, last.file);
+  if (ws === 'plan') {
+    if (lists.notes.length) return openFile('notes', lists.notes[0]);
+    return showEmpty('這本書還沒有筆記。大綱、人物、設定都可以各寫一篇。', '新增筆記', () => newFile('notes'));
+  }
   if (state.msFiles.length) return openFile('ms', state.msFiles[0]);
-  if (lists.notes.length) return openFile('notes', lists.notes[0]);
   showEmpty('這本書還沒有稿件。', '新增稿件', () => newFile('ms'));
 }
 async function openFile(kind, f) {
@@ -819,10 +1042,11 @@ async function openFile(kind, f) {
   try { if (state.store.stat) sig = await state.store.stat(state.book, kind, f); text = await state.store.read(state.book, kind, f); } catch (e) { console.error(e); alert('無法讀取檔案：' + e.message); return; }
   Object.assign(state, { kind, file: f, dirty: false, live: null, curChap: null });
   if (sig) known.set(pkey(state.book, kind, f), { sig, base: text });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind, file: f }));
+  remember(kind, f);
   hideViews();
-  $('#docTitle').innerHTML = `<span class="k">${KINDS[kind]}</span><span class="t"></span>`;
-  $('#docTitle .t').textContent = baseName(f);
+  setDocTitle(kind, f);
+  const c = closedDirs();                          // 開啟收合分類裡的筆記時，展開那個分類
+  if (kind === 'notes' && c.delete(folderOf(f))) { setClosed(c); renderNotes(); }
   if (kind === 'ms') {
     notesEl.hidden = true; scroller.hidden = false; load(text);
     editor.focus({ preventScroll: true }); placeCaret(editor.lastElementChild, true);
@@ -835,30 +1059,44 @@ async function openFile(kind, f) {
   }
   setStatus('已儲存'); markActive(); refreshStats();
 }
+function setDocTitle(kind, f) {
+  $('#docTitle').innerHTML = '<span class="k"></span><span class="t"></span>';
+  $('#docTitle .k').textContent = folderOf(f) || KINDS[kind];
+  $('#docTitle .t').textContent = baseName(f);
+}
 async function newBook() {
   if (!state.store) return;
   const n = sanitize(prompt('書名')); if (!n) return;
   if ((await state.store.books()).includes(n)) return alert('已經有同名的書了。');
   await state.store.createBook(n);
   await state.store.write(n, 'ms', '正文.md', '');
-  await state.store.write(n, 'notes', '大綱.md', '');
+  await createSuggested(state.store, n);
+  await state.store.write(n, 'notes', '大綱/全書大綱.md', '');
   localStorage.setItem('gaozhi-last:' + n, JSON.stringify({ kind: 'ms', file: '正文.md' }));
   await refreshBooks(); await openBook(n);
 }
-async function newFile(kind) {
+async function newFile(kind, dir = '') {
   if (!state.book) return;
-  const n = sanitize(prompt(kind === 'ms' ? '稿件名稱' : '筆記名稱', kind === 'ms' ? '新稿件' : '新筆記')); if (!n) return;
-  const f = n + '.md';
+  const n = sanitize(prompt(kind === 'ms' ? '稿件名稱' : (dir ? `在「${dir}」新增筆記` : '筆記名稱'), kind === 'ms' ? '新稿件' : '新筆記')); if (!n) return;
+  const pre = dir ? dir + '/' : '', f = pre + n + '.md';
   if (await state.store.exists(state.book, kind, f)) return alert('已經有同名檔案了。');
   await flush(true);
-  await state.store.write(state.book, kind, f, '');
+  let text = '';                                   // 分類裡有「範本.md」就用它開頭
+  if (kind === 'notes' && n !== TPL && await state.store.exists(state.book, kind, pre + TPL + '.md'))
+    text = (await state.store.read(state.book, kind, pre + TPL + '.md')).replaceAll('{{名稱}}', n);
+  await state.store.write(state.book, kind, f, text);
   if (kind === 'ms') state.counts[f] = { all: 0, np: 0 };
   await renderFiles(); await openFile(kind, f);
 }
 async function renameFile(kind, f) {
   const n = sanitize(prompt('新名稱', baseName(f))); if (!n || n === baseName(f)) return;
-  const nf = n + '.md';
+  const nf = (folderOf(f) ? folderOf(f) + '/' : '') + n + '.md';
   if (await state.store.exists(state.book, kind, nf)) return alert('已經有同名檔案了。');
+  await moveFile(kind, f, nf);
+  await renderFiles();
+}
+// 改名或移到其他分類（不重畫側欄）
+async function moveFile(kind, f, nf) {
   await flush(true);
   await state.store.rename(state.book, kind, f, nf);
   if (state.store.stat) {
@@ -867,11 +1105,7 @@ async function renameFile(kind, f) {
   }
   if (kind === 'ms' && state.counts[f]) { state.counts[nf] = state.counts[f]; delete state.counts[f]; }
   if (kind === 'ms') { await loadGems(); let ch = false; for (const g of state.gems) if (g.file === f) { g.file = nf; ch = true; } if (ch) await saveGems(); }
-  if (state.kind === kind && state.file === f) {
-    state.file = nf; $('#docTitle .t').textContent = n;
-    localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind, file: nf }));
-  }
-  await renderFiles();
+  if (state.kind === kind && state.file === f) { state.file = nf; setDocTitle(kind, nf); remember(kind, nf); }
 }
 async function deleteFile(kind, f) {
   if (!confirm(`確定要刪除「${baseName(f)}」嗎？此動作無法復原。`)) return;
@@ -887,6 +1121,68 @@ function download(name, text) {
   a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
+/* ════════ 工作區 ════════ */
+// 構思：筆記（大綱、人物、設定）；寫作：稿件與專注模式；修訂：常用詞標示、遺珠
+const WS_KINDS = { plan: ['notes'], write: ['ms', 'stats'], edit: ['ms', 'gems', 'words', 'stats'] };
+function applyWs(ws) {
+  state.ws = ws; document.body.dataset.ws = ws;
+  try { localStorage.setItem('gaozhi-ws', ws); } catch {}
+  document.querySelectorAll('#wsSeg button').forEach(b => b.classList.toggle('on', b.dataset.w === ws));
+}
+// 記住每個工作區最後開啟的項目；開啟不屬於目前工作區的項目時，自動切到適合的工作區
+function remember(kind, file) {
+  if (!WS_KINDS[state.ws].includes(kind)) applyWs(Object.keys(WS_KINDS).find(w => WS_KINDS[w].includes(kind)));
+  const v = JSON.stringify(file ? { kind, file } : { kind });
+  localStorage.setItem('gaozhi-last:' + state.book, v);
+  localStorage.setItem(`gaozhi-last:${state.book}:${state.ws}`, v);
+}
+async function switchWs(ws) {
+  if (ws === state.ws) return;
+  applyWs(ws);
+  if (!state.book) { updateZen(); return; }
+  if (state.kind && WS_KINDS[ws].includes(state.kind)) {     // 目前的檔案也屬於新工作區：留在原處
+    remember(state.kind, state.file); markActive(); refreshStats(); return;
+  }
+  await openDefault();
+}
+document.querySelectorAll('#wsSeg button').forEach(b => b.onclick = () => switchWs(b.dataset.w));
+document.addEventListener('keydown', e => {
+  if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+  const ws = !e.shiftKey && { Digit1: 'plan', Digit2: 'write', Digit3: 'edit' }[e.code];
+  if (ws) { e.preventDefault(); switchWs(ws); }
+  else if (e.shiftKey && e.code === 'KeyF' && state.ws === 'write') { e.preventDefault(); toggleZen(); }
+});
+
+/* 專注模式：游標所在段落保持在畫面中央，其他段落淡出。
+   只換一條樣式規則（nth-child），不在稿件 DOM 上加 class，所以存檔、復原與輸入法都不受影響。 */
+let zenMouse = false;
+function updateZen() {
+  const on = !!state.settings.zen && state.ws === 'write' && state.kind === 'ms';
+  document.body.classList.toggle('zen', on);
+  if (on) zenFollow(true); else $('#zenRule').textContent = '';
+}
+function toggleZen() { state.settings.zen = !state.settings.zen; applySettings(); }
+function zenFollow(force) {
+  if (!document.body.classList.contains('zen')) return;
+  const b = currentBlock();
+  const i = b ? [...editor.children].indexOf(b) + 1 : 0;
+  $('#zenRule').textContent = i ? `body.zen .editor>:nth-child(${i}){opacity:1}` : '';
+  if (!b || zenMouse || (composing && !force)) return;
+  const s = getSelection(); if (!s.rangeCount || !s.isCollapsed) return;
+  let rect = null;
+  const rs = s.getRangeAt(0).getClientRects(); if (rs.length) rect = rs[rs.length - 1];
+  if (!rect || (!rect.width && !rect.height)) rect = b.getBoundingClientRect();
+  const sc = scroller.getBoundingClientRect(), v = state.settings.mode === 'v';
+  const d = v ? (rect.left + rect.right - sc.left - sc.right) / 2 : (rect.top + rect.bottom - sc.top - sc.bottom) / 2;
+  if (Math.abs(d) < 2) return;
+  const behavior = Math.abs(d) > (v ? sc.width : sc.height) / 4 ? 'smooth' : 'instant';
+  scroller.scrollBy(v ? { left: d, behavior } : { top: d, behavior });
+}
+scroller.addEventListener('mousedown', () => { zenMouse = true; });
+document.addEventListener('mouseup', () => { if (zenMouse) { zenMouse = false; zenFollow(); } });
+window.addEventListener('resize', () => zenFollow());
+$('#zenBtn').addEventListener('mousedown', e => { e.preventDefault(); toggleZen(); });
+
 /* ════════ 設定 ════════ */
 function loadSettings() { try { Object.assign(state.settings, JSON.parse(localStorage.getItem('gaozhi-settings')) || {}); } catch {} }
 function applySettings(keepPos) {
@@ -898,10 +1194,12 @@ function applySettings(keepPos) {
   $('#fontBtn').textContent = s.font === 'sans' ? '黑體' : '明體';
   $('#indentBtn').classList.toggle('on', s.indent);
   $('#hlBtn').classList.toggle('on', s.hl);
+  $('#zenBtn').classList.toggle('on', !!s.zen);
   applyTheme();
   localStorage.setItem('gaozhi-settings', JSON.stringify(s));
   if (blk) blk.scrollIntoView({ block: 'center', inline: 'center' });
   else if (keepPos) { scroller.scrollLeft = 0; scroller.scrollTop = 0; }
+  updateZen();
 }
 document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { state.settings.mode = b.dataset.mode; applySettings(true); });
 $('#fontBtn').onclick = () => { state.settings.font = state.settings.font === 'sans' ? 'serif' : 'sans'; applySettings(); };
@@ -909,7 +1207,7 @@ $('#fsDown').onclick = () => { state.settings.fs = Math.max(14, state.settings.f
 $('#fsUp').onclick = () => { state.settings.fs = Math.min(36, state.settings.fs + 2); applySettings(); };
 $('#indentBtn').onclick = () => { state.settings.indent = !state.settings.indent; applySettings(); };
 $('#hlBtn').addEventListener('mousedown', e => { e.preventDefault(); state.settings.hl = !state.settings.hl; applySettings(); highlightWords(); if (state.kind === 'words') $('#hlIn').checked = state.settings.hl; });
-$('#focusBtn').onclick = () => document.body.classList.toggle('focus');
+$('#sideBtn').onclick = () => document.body.classList.toggle('noside');
 $('#newBook').onclick = newBook;
 $('#bookSel').onchange = e => openBook(e.target.value);
 document.querySelectorAll('[data-new]').forEach(b => b.onclick = () => newFile(b.dataset.new));
@@ -1009,7 +1307,7 @@ async function openGems() {
   if (!state.book) return;
   await flush(true);
   Object.assign(state, { kind: 'gems', file: null, live: null, curChap: null });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'gems' }));
+  remember('gems');
   hideViews(); $('#gemsView').hidden = false;
   $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">遺珠</span>';
   markActive(); refreshStats();
@@ -1124,7 +1422,7 @@ async function openStats() {
   if (!state.book) return;
   await flush(true); flushMeta();
   Object.assign(state, { kind: 'stats', file: null, live: null, curChap: null });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'stats' }));
+  remember('stats');
   hideViews(); $('#statsView').hidden = false;
   $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">每日字數</span>';
   markActive(); refreshStats(); renderStats();
@@ -1242,7 +1540,7 @@ const splitWords = s => s.split(/[\s,，、;；/|]+/u).map(w => w.trim()).filter
 // 在稿件中用 CSS Highlight 標示（不改動文字本身，也不影響編輯、復原與存檔）
 function highlightWords() {
   if (composing) return;                           // 選字中先不動，選完再更新
-  const on = state.kind === 'ms' && state.settings.hl && wordRe;
+  const on = state.kind === 'ms' && state.ws === 'edit' && state.settings.hl && wordRe;
   if (!on) {
     if (HL_OK) { CSS.highlights.delete('gz-words'); CSS.highlights.delete('gz-words-b'); }
     $('#cntWords').innerHTML = '';
@@ -1279,7 +1577,7 @@ async function bookLines() {
   const out = [];
   for (const f of state.msFiles) {
     let t = ''; try { t = await state.store.read(state.book, 'ms', f); } catch {}
-    for (const l of t.replace(/\r\n?/g, '\n').split('\n')) if (l.trim() && !HEADING.test(l) && !BREAK.test(l)) out.push(unesc(l));
+    for (const l of t.replace(/\r\n?/g, '\n').split('\n')) if (l.trim() && !HEADING.test(l) && !BREAK.test(l)) out.push(unesc(l.replace(QUOTE, '')));
   }
   return out;
 }
@@ -1309,7 +1607,7 @@ async function openWords() {
   if (!state.book) return;
   await flush(true);
   Object.assign(state, { kind: 'words', file: null, live: null, curChap: null });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'words' }));
+  remember('words');
   hideViews(); $('#wordsView').hidden = false;
   $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">常用詞</span>';
   markActive(); refreshStats();
@@ -1468,7 +1766,7 @@ async function checkExternal() {
     }
     if (book !== state.book) return;
     // 2. 其他稿件：更新字數（不算進今日字數）
-    const ms = await store.list(book, 'ms'), notes = await store.list(book, 'notes');
+    const ms = await store.list(book, 'ms'), notes = await store.list(book, 'notes'), dirs = await store.folders(book);
     for (const f of ms) {
       if (state.kind === 'ms' && f === state.file) continue;
       const k = pkey(book, 'ms', f), rec = known.get(k), cur = await store.stat(book, 'ms', f);
@@ -1482,7 +1780,8 @@ async function checkExternal() {
       if (!ms.includes(f) && !(state.kind === 'ms' && f === state.file)) { shiftBaseline(state.counts[f], -1); delete state.counts[f]; }
     }
     // 3. 檔案清單有變（例如在手機上新增了檔案）才重畫
-    if (JSON.stringify(ms) !== JSON.stringify(state.msFiles) || JSON.stringify(notes) !== JSON.stringify(state.noteFiles || [])) await renderFiles();
+    if (JSON.stringify(ms) !== JSON.stringify(state.msFiles) || JSON.stringify(notes) !== JSON.stringify(state.noteFiles || []) ||
+        JSON.stringify(dirs) !== JSON.stringify(state.noteDirs || [])) await renderFiles();
     updateBookStat();
   } catch (e) { console.error(e); }
   finally { checking = false; }
@@ -1513,7 +1812,9 @@ async function useStore(store) {
   if (!books.length && store instanceof LocalStore && !localStorage.getItem('gaozhi-sampled')) {
     localStorage.setItem('gaozhi-sampled', '1');
     await store.createBook('範例之書'); await store.write('範例之書', 'ms', '正文.md', SAMPLE);
-    await store.write('範例之書', 'notes', '大綱.md', '主角：在舊書店打工的大學生。\n\n第一章：雨夜相遇。\n');
+    await createSuggested(store, '範例之書');
+    await store.write('範例之書', 'notes', '大綱/全書大綱.md', '第一章：雨夜相遇。\n');
+    await store.write('範例之書', 'notes', '人物/林曉.md', TEMPLATES.人物.replaceAll('{{名稱}}', '林曉').replace('身分：', '身分：在舊書店打工的大學生'));
     books = await refreshBooks();
   }
   const last = localStorage.getItem('gaozhi-book');
@@ -1548,6 +1849,7 @@ $('#closeWelcome').onclick = () => { $('#welcome').hidden = true; };
 $('#switchStore').onclick = async () => { await flush(true); showWelcome(await kvGet('root').catch(() => null)); };
 
 (async function boot() {
+  const ws0 = localStorage.getItem('gaozhi-ws'); applyWs(WS_KINDS[ws0] ? ws0 : 'write');
   loadSettings(); applySettings();
   const mode = localStorage.getItem('gaozhi-store');
   if (mode === 'local') return useStore(new LocalStore());
