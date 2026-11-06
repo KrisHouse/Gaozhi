@@ -55,8 +55,8 @@ button:hover{background:var(--hover)}
 [hidden]{display:none!important}
 
 #app{display:grid;grid-template-columns:250px 1fr;height:100vh}
-body.focus #app{grid-template-columns:0 1fr}
-body.focus #side{visibility:hidden}
+body.noside #app{grid-template-columns:0 1fr}
+body.noside #side{visibility:hidden}
 
 /* ── 側欄 ── */
 #side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
@@ -73,6 +73,7 @@ body.focus #side{visibility:hidden}
 .sh button{padding:0 6px;font-size:15px;line-height:1.4}
 ul{list-style:none;margin:0;padding:0}
 .files{max-height:28vh;overflow:auto}
+#notesList{max-height:none}
 .files li,#outline li{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:6px;cursor:pointer}
 .files li:hover,#outline li:hover{background:var(--hover)}
 .files li.on{background:var(--hover);color:var(--accent);font-weight:500}
@@ -212,11 +213,23 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
 .reps button.add{color:var(--accent)}
 #cntWords{cursor:pointer}
 
+/* ── 工作區 ── */
+.brand .seg{font-family:var(--sans);font-size:12px;font-weight:400;letter-spacing:0}
+.brand .seg button{padding:2px 8px}
+body[data-ws=plan] [data-in]:not([data-in~=plan]),
+body[data-ws=write] [data-in]:not([data-in~=write]),
+body[data-ws=edit] [data-in]:not([data-in~=edit]){display:none!important}
+/* ── 專注模式：目前段落置中，其他淡出（只改樣式，不動稿件 DOM） ── */
+.editor>*{transition:opacity .3s}
+body.zen .editor{padding-block:45vh}
+body.v.zen .editor{padding-block:50vw}
+body.zen .editor>*{opacity:.22}
+
 #toast{position:fixed;bottom:46px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:8px;font-size:13px;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.18);max-width:calc(100% - 32px)}
 
 @media (max-width:760px){
   #app{grid-template-columns:0 1fr} #side{visibility:hidden}
-  body.focus #app{grid-template-columns:230px 1fr} body.focus #side{visibility:visible}
+  body.noside #app{grid-template-columns:230px 1fr} body.noside #side{visibility:visible}
   #punct{order:3;flex-basis:100%}
 }
 </style>
@@ -224,24 +237,24 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
 <body>
 <div id="app">
   <aside id="side">
-    <div class="brand"><span>稿紙</span></div>
+    <div class="brand"><span>稿紙</span><div class="seg" id="wsSeg"><button data-w="plan" title="構思：大綱、人物、設定等筆記（Ctrl/⌘ 1）">構思</button><button data-w="write" title="寫作：稿件與專注模式（Ctrl/⌘ 2）">寫作</button><button data-w="edit" title="修訂：常用詞標示與遺珠（Ctrl/⌘ 3）">修訂</button></div></div>
     <div class="row"><select id="bookSel" title="選擇書籍"></select><button id="newBook" title="新增書籍">＋</button></div>
     <div id="bookStat"></div>
     <div class="bookActions"><button id="exportBook" title="把全部稿件合併成一個 Markdown 檔下載">匯出全書</button></div>
-    <div class="sect"><div class="sh"><span>稿件</span><button data-new="ms" title="新增稿件">＋</button></div><ul id="msList" class="files"></ul></div>
-    <div class="sect"><div class="sh"><span>筆記</span><button data-new="notes" title="新增筆記">＋</button></div><ul id="notesList" class="files"></ul></div>
-    <div class="sect"><div class="sh"><span>工具</span></div><ul class="files">
-      <li class="tool" data-kind="gems" id="toolGems" title="捨不得刪的段落"><span class="n">遺珠</span><span class="c" id="gemCount"></span></li>
+    <div class="sect" data-in="write edit"><div class="sh"><span>稿件</span><button data-new="ms" title="新增稿件">＋</button></div><ul id="msList" class="files"></ul></div>
+    <div class="sect grow" data-in="plan"><div class="sh"><span>筆記</span><button data-new="notes" title="新增筆記">＋</button></div><ul id="notesList" class="files"></ul></div>
+    <div class="sect" data-in="write edit"><div class="sh"><span>工具</span></div><ul class="files">
+      <li class="tool" data-in="edit" data-kind="gems" id="toolGems" title="捨不得刪的段落"><span class="n">遺珠</span><span class="c" id="gemCount"></span></li>
       <li class="tool" data-kind="stats" id="toolStats" title="每日寫作字數"><span class="n">每日字數</span><span class="c" id="todayMini"></span></li>
-      <li class="tool" data-kind="words" id="toolWords" title="容易重複使用的詞語"><span class="n">常用詞</span><span class="c" id="wordsMini"></span></li>
+      <li class="tool" data-in="edit" data-kind="words" id="toolWords" title="容易重複使用的詞語"><span class="n">常用詞</span><span class="c" id="wordsMini"></span></li>
     </ul></div>
-    <div class="sect grow"><div class="sh"><span>目錄</span></div><ul id="outline"></ul></div>
+    <div class="sect grow" data-in="write edit"><div class="sh"><span>目錄</span></div><ul id="outline"></ul></div>
     <div class="foot"><span id="storeName"></span><button id="switchStore">更換</button></div>
   </aside>
 
   <main>
     <header id="bar">
-      <button id="focusBtn" title="隱藏／顯示側欄">☰</button>
+      <button id="sideBtn" title="隱藏／顯示側欄">☰</button>
       <div id="docTitle"></div>
       <div id="punct"></div>
       <div class="tools">
@@ -249,8 +262,9 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
         <button id="fontBtn" title="切換字體">明體</button>
         <button id="fsDown" title="縮小字級">A−</button><button id="fsUp" title="放大字級">A＋</button>
         <button id="indentBtn" title="段首縮排兩字">縮排</button>
-        <button id="hlBtn" title="標示常用詞">標示</button>
-        <button id="gemBtn" title="把選取文字或游標所在段落移到遺珠（Alt+J／⌥J）">送遺珠</button>
+        <button id="hlBtn" data-in="edit" title="標示常用詞">標示</button>
+        <button id="zenBtn" data-in="write" title="專注模式：目前段落保持在畫面中央，其他段落淡出（Ctrl/⌘ Shift F）">專注</button>
+        <button id="gemBtn" data-in="write edit" title="把選取文字或游標所在段落移到遺珠（Alt+J／⌥J）">送遺珠</button>
         <button id="exportBtn" title="下載目前檔案">匯出</button>
         <div class="pop-wrap"><button id="themeBtn" title="配色">配色</button><div id="themePop" class="pop" hidden></div></div>
       </div>
@@ -264,13 +278,14 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
     <div id="empty"><div id="emptyMsg"></div><button id="emptyBtn"></button></div>
 
     <footer id="status">
-      <span id="cntChapter"></span><span id="cntDoc"></span><span id="cntBook"></span><span id="cntToday" title="查看每日字數"></span><span id="cntSel"></span><span id="cntWords" title="查看常用詞"></span>
+      <span id="cntChapter"></span><span id="cntDoc"></span><span id="cntBook"></span><span id="cntToday" title="查看每日字數"></span><span id="cntSel"></span><span id="cntWords" data-in="edit" title="查看常用詞"></span>
       <span id="saveState"></span>
     </footer>
   </main>
 </div>
 
 <div id="toast" hidden></div>
+<style id="zenRule"></style>
 <div id="welcome" hidden>
   <div class="card">
     <h1>稿紙</h1>
@@ -287,6 +302,7 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
       連按三次 <kbd>Enter</kbd>：開新章<br>
       在稿件最開頭的空行按 <kbd>Enter</kbd>：直接建立章名<br>
       <kbd>Alt J</kbd>／<kbd>⌥J</kbd>：把段落或選取文字移到遺珠<br>
+      <kbd>Ctrl/⌘ 1／2／3</kbd>：切換構思／寫作／修訂工作區<br>
       <kbd>Ctrl/⌘ S</kbd> 立即儲存（平時會自動儲存）
     </div>
   </div>
@@ -307,7 +323,8 @@ const CFG = '.稿紙設定.json';
 const state = {
   store: null, book: null, kind: null, file: null, dirty: false,
   counts: {}, live: null, msFiles: [], curChap: null,
-  settings: { mode: 'h', font: 'serif', fs: 20, indent: true, metric: 'all', goal: 0, theme: 'auto', hl: true },
+  settings: { mode: 'h', font: 'serif', fs: 20, indent: true, metric: 'all', goal: 0, theme: 'auto', hl: true, zen: false },
+  ws: 'write',
   gems: [], meta: null,
 };
 let composing = false;
@@ -724,7 +741,7 @@ let rafSel = 0;
 document.addEventListener('selectionchange', () => {
   if (rafSel) return;
   rafSel = requestAnimationFrame(() => {
-    rafSel = 0; updateSel();
+    rafSel = 0; updateSel(); zenFollow();
     if (state.kind === 'ms') { const ce = currentChapterEl(); if (ce !== undefined && ce !== state.curChap) { state.curChap = ce; scheduleStats(); } }
   });
 });
@@ -756,7 +773,7 @@ window.addEventListener('beforeunload', e => { if (state.dirty) { flush(true); e
 function showEmpty(msg, label, fn) {
   hideViews(); $('#empty').hidden = false;
   $('#emptyMsg').textContent = msg; const b = $('#emptyBtn'); b.hidden = !label; b.textContent = label || ''; b.onclick = fn;
-  $('#docTitle').textContent = ''; refreshStats();
+  $('#docTitle').textContent = ''; refreshStats(); updateZen();
 }
 async function refreshBooks() {
   const sel = $('#bookSel'), books = await state.store.books(); sel.innerHTML = '';
@@ -800,17 +817,23 @@ async function renderFiles() {
   }
   markActive();
 }
-function markActive() { document.querySelectorAll('#side li[data-kind]').forEach(li => li.classList.toggle('on', li.dataset.kind === state.kind && (li.classList.contains('tool') || li.dataset.file === state.file))); }
+function markActive() { updateZen(); document.querySelectorAll('#side li[data-kind]').forEach(li => li.classList.toggle('on', li.dataset.kind === state.kind && (li.classList.contains('tool') || li.dataset.file === state.file))); }
 function hideViews() { for (const id of ['#scroller', '#notes', '#empty', '#gemsView', '#statsView', '#wordsView']) $(id).hidden = true; }
 async function openDefault() {
-  let last = null; try { last = JSON.parse(localStorage.getItem('gaozhi-last:' + state.book)); } catch {}
+  const ws = state.ws, ok = WS_KINDS[ws];
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem(`gaozhi-last:${state.book}:${ws}`) || localStorage.getItem('gaozhi-last:' + state.book)); } catch {}
+  if (!ok.includes(last?.kind)) last = null;
   if (last?.kind === 'gems') return openGems();
   if (last?.kind === 'stats') return openStats();
   if (last?.kind === 'words') return openWords();
   const lists = { ms: state.msFiles, notes: state.noteFiles || [] };
   if (last && lists[last.kind]?.includes(last.file)) return openFile(last.kind, last.file);
+  if (ws === 'plan') {
+    if (lists.notes.length) return openFile('notes', lists.notes[0]);
+    return showEmpty('這本書還沒有筆記。大綱、人物、設定都可以各寫一篇。', '新增筆記', () => newFile('notes'));
+  }
   if (state.msFiles.length) return openFile('ms', state.msFiles[0]);
-  if (lists.notes.length) return openFile('notes', lists.notes[0]);
   showEmpty('這本書還沒有稿件。', '新增稿件', () => newFile('ms'));
 }
 async function openFile(kind, f) {
@@ -819,7 +842,7 @@ async function openFile(kind, f) {
   try { if (state.store.stat) sig = await state.store.stat(state.book, kind, f); text = await state.store.read(state.book, kind, f); } catch (e) { console.error(e); alert('無法讀取檔案：' + e.message); return; }
   Object.assign(state, { kind, file: f, dirty: false, live: null, curChap: null });
   if (sig) known.set(pkey(state.book, kind, f), { sig, base: text });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind, file: f }));
+  remember(kind, f);
   hideViews();
   $('#docTitle').innerHTML = `<span class="k">${KINDS[kind]}</span><span class="t"></span>`;
   $('#docTitle .t').textContent = baseName(f);
@@ -869,7 +892,7 @@ async function renameFile(kind, f) {
   if (kind === 'ms') { await loadGems(); let ch = false; for (const g of state.gems) if (g.file === f) { g.file = nf; ch = true; } if (ch) await saveGems(); }
   if (state.kind === kind && state.file === f) {
     state.file = nf; $('#docTitle .t').textContent = n;
-    localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind, file: nf }));
+    remember(kind, nf);
   }
   await renderFiles();
 }
@@ -887,6 +910,68 @@ function download(name, text) {
   a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
+/* ════════ 工作區 ════════ */
+// 構思：筆記（大綱、人物、設定）；寫作：稿件與專注模式；修訂：常用詞標示、遺珠
+const WS_KINDS = { plan: ['notes'], write: ['ms', 'stats'], edit: ['ms', 'gems', 'words', 'stats'] };
+function applyWs(ws) {
+  state.ws = ws; document.body.dataset.ws = ws;
+  try { localStorage.setItem('gaozhi-ws', ws); } catch {}
+  document.querySelectorAll('#wsSeg button').forEach(b => b.classList.toggle('on', b.dataset.w === ws));
+}
+// 記住每個工作區最後開啟的項目；開啟不屬於目前工作區的項目時，自動切到適合的工作區
+function remember(kind, file) {
+  if (!WS_KINDS[state.ws].includes(kind)) applyWs(Object.keys(WS_KINDS).find(w => WS_KINDS[w].includes(kind)));
+  const v = JSON.stringify(file ? { kind, file } : { kind });
+  localStorage.setItem('gaozhi-last:' + state.book, v);
+  localStorage.setItem(`gaozhi-last:${state.book}:${state.ws}`, v);
+}
+async function switchWs(ws) {
+  if (ws === state.ws) return;
+  applyWs(ws);
+  if (!state.book) { updateZen(); return; }
+  if (state.kind && WS_KINDS[ws].includes(state.kind)) {     // 目前的檔案也屬於新工作區：留在原處
+    remember(state.kind, state.file); markActive(); refreshStats(); return;
+  }
+  await openDefault();
+}
+document.querySelectorAll('#wsSeg button').forEach(b => b.onclick = () => switchWs(b.dataset.w));
+document.addEventListener('keydown', e => {
+  if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+  const ws = !e.shiftKey && { Digit1: 'plan', Digit2: 'write', Digit3: 'edit' }[e.code];
+  if (ws) { e.preventDefault(); switchWs(ws); }
+  else if (e.shiftKey && e.code === 'KeyF' && state.ws === 'write') { e.preventDefault(); toggleZen(); }
+});
+
+/* 專注模式：游標所在段落保持在畫面中央，其他段落淡出。
+   只換一條樣式規則（nth-child），不在稿件 DOM 上加 class，所以存檔、復原與輸入法都不受影響。 */
+let zenMouse = false;
+function updateZen() {
+  const on = !!state.settings.zen && state.ws === 'write' && state.kind === 'ms';
+  document.body.classList.toggle('zen', on);
+  if (on) zenFollow(true); else $('#zenRule').textContent = '';
+}
+function toggleZen() { state.settings.zen = !state.settings.zen; applySettings(); }
+function zenFollow(force) {
+  if (!document.body.classList.contains('zen')) return;
+  const b = currentBlock();
+  const i = b ? [...editor.children].indexOf(b) + 1 : 0;
+  $('#zenRule').textContent = i ? `body.zen .editor>:nth-child(${i}){opacity:1}` : '';
+  if (!b || zenMouse || (composing && !force)) return;
+  const s = getSelection(); if (!s.rangeCount || !s.isCollapsed) return;
+  let rect = null;
+  const rs = s.getRangeAt(0).getClientRects(); if (rs.length) rect = rs[rs.length - 1];
+  if (!rect || (!rect.width && !rect.height)) rect = b.getBoundingClientRect();
+  const sc = scroller.getBoundingClientRect(), v = state.settings.mode === 'v';
+  const d = v ? (rect.left + rect.right - sc.left - sc.right) / 2 : (rect.top + rect.bottom - sc.top - sc.bottom) / 2;
+  if (Math.abs(d) < 2) return;
+  const behavior = Math.abs(d) > (v ? sc.width : sc.height) / 4 ? 'smooth' : 'instant';
+  scroller.scrollBy(v ? { left: d, behavior } : { top: d, behavior });
+}
+scroller.addEventListener('mousedown', () => { zenMouse = true; });
+document.addEventListener('mouseup', () => { if (zenMouse) { zenMouse = false; zenFollow(); } });
+window.addEventListener('resize', () => zenFollow());
+$('#zenBtn').addEventListener('mousedown', e => { e.preventDefault(); toggleZen(); });
+
 /* ════════ 設定 ════════ */
 function loadSettings() { try { Object.assign(state.settings, JSON.parse(localStorage.getItem('gaozhi-settings')) || {}); } catch {} }
 function applySettings(keepPos) {
@@ -898,10 +983,12 @@ function applySettings(keepPos) {
   $('#fontBtn').textContent = s.font === 'sans' ? '黑體' : '明體';
   $('#indentBtn').classList.toggle('on', s.indent);
   $('#hlBtn').classList.toggle('on', s.hl);
+  $('#zenBtn').classList.toggle('on', !!s.zen);
   applyTheme();
   localStorage.setItem('gaozhi-settings', JSON.stringify(s));
   if (blk) blk.scrollIntoView({ block: 'center', inline: 'center' });
   else if (keepPos) { scroller.scrollLeft = 0; scroller.scrollTop = 0; }
+  updateZen();
 }
 document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { state.settings.mode = b.dataset.mode; applySettings(true); });
 $('#fontBtn').onclick = () => { state.settings.font = state.settings.font === 'sans' ? 'serif' : 'sans'; applySettings(); };
@@ -909,7 +996,7 @@ $('#fsDown').onclick = () => { state.settings.fs = Math.max(14, state.settings.f
 $('#fsUp').onclick = () => { state.settings.fs = Math.min(36, state.settings.fs + 2); applySettings(); };
 $('#indentBtn').onclick = () => { state.settings.indent = !state.settings.indent; applySettings(); };
 $('#hlBtn').addEventListener('mousedown', e => { e.preventDefault(); state.settings.hl = !state.settings.hl; applySettings(); highlightWords(); if (state.kind === 'words') $('#hlIn').checked = state.settings.hl; });
-$('#focusBtn').onclick = () => document.body.classList.toggle('focus');
+$('#sideBtn').onclick = () => document.body.classList.toggle('noside');
 $('#newBook').onclick = newBook;
 $('#bookSel').onchange = e => openBook(e.target.value);
 document.querySelectorAll('[data-new]').forEach(b => b.onclick = () => newFile(b.dataset.new));
@@ -1009,7 +1096,7 @@ async function openGems() {
   if (!state.book) return;
   await flush(true);
   Object.assign(state, { kind: 'gems', file: null, live: null, curChap: null });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'gems' }));
+  remember('gems');
   hideViews(); $('#gemsView').hidden = false;
   $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">遺珠</span>';
   markActive(); refreshStats();
@@ -1124,7 +1211,7 @@ async function openStats() {
   if (!state.book) return;
   await flush(true); flushMeta();
   Object.assign(state, { kind: 'stats', file: null, live: null, curChap: null });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'stats' }));
+  remember('stats');
   hideViews(); $('#statsView').hidden = false;
   $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">每日字數</span>';
   markActive(); refreshStats(); renderStats();
@@ -1242,7 +1329,7 @@ const splitWords = s => s.split(/[\s,，、;；/|]+/u).map(w => w.trim()).filter
 // 在稿件中用 CSS Highlight 標示（不改動文字本身，也不影響編輯、復原與存檔）
 function highlightWords() {
   if (composing) return;                           // 選字中先不動，選完再更新
-  const on = state.kind === 'ms' && state.settings.hl && wordRe;
+  const on = state.kind === 'ms' && state.ws === 'edit' && state.settings.hl && wordRe;
   if (!on) {
     if (HL_OK) { CSS.highlights.delete('gz-words'); CSS.highlights.delete('gz-words-b'); }
     $('#cntWords').innerHTML = '';
@@ -1309,7 +1396,7 @@ async function openWords() {
   if (!state.book) return;
   await flush(true);
   Object.assign(state, { kind: 'words', file: null, live: null, curChap: null });
-  localStorage.setItem('gaozhi-last:' + state.book, JSON.stringify({ kind: 'words' }));
+  remember('words');
   hideViews(); $('#wordsView').hidden = false;
   $('#docTitle').innerHTML = '<span class="k">工具</span><span class="t">常用詞</span>';
   markActive(); refreshStats();
@@ -1548,6 +1635,7 @@ $('#closeWelcome').onclick = () => { $('#welcome').hidden = true; };
 $('#switchStore').onclick = async () => { await flush(true); showWelcome(await kvGet('root').catch(() => null)); };
 
 (async function boot() {
+  const ws0 = localStorage.getItem('gaozhi-ws'); applyWs(WS_KINDS[ws0] ? ws0 : 'write');
   loadSettings(); applySettings();
   const mode = localStorage.getItem('gaozhi-store');
   if (mode === 'local') return useStore(new LocalStore());
