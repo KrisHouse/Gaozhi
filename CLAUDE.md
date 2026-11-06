@@ -17,6 +17,7 @@ Users edit the same `.md` files in other apps (Obsidian, iA Writer on iPhone). D
 - `書名/遺珠.md`: entries headed `## YYYY-MM-DD HH:mm`, then `來源：[稿件 › 章](<稿件/檔名.md>)`, then paragraphs.
 - `書名/.稿紙.json`: daily count history. `寫作資料夾/.稿紙設定.json`: shared 常用詞 list.
 - Conflict copies: `筆記/衝突副本：<名稱>（本機／外部 MMDD-HHmm）.md`.
+- Note categories: subfolders of `筆記/` (the app creates one level; deeper ones made elsewhere are listed under their top folder). `<分類>/範本.md` is a template; `{{名稱}}` is replaced by the new note's name. Manuscripts in `稿件/` stay flat.
 
 ## Behaviour that is easy to break
 

@@ -49,6 +49,8 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 └── 書名/
     ├── 稿件/          manuscripts (.md)
     ├── 筆記/          notes (.md), including any conflict copies
+    │   ├── 人物/      note categories are subfolders (e.g. 大綱, 人物, 設定)
+    │   │   └── 範本.md   optional template for new notes in this category
     ├── 遺珠.md        cut paragraphs
     └── .稿紙.json     daily word-count history (hidden file)
 ```
@@ -72,7 +74,7 @@ The switch at the top of the sidebar picks one of three workspaces, each showing
  
 | Workspace | Sidebar | Toolbar extras |
 |---|---|---|
-| **構思** (planning) | 筆記: outline, characters, worldbuilding, any other notes | none |
+| **構思** (planning) | 筆記, grouped into categories (see *Note categories* below) | none |
 | **寫作** (writing) | 稿件, 每日字數, 目錄 | 專注, 送遺珠 |
 | **修訂** (editing) | 稿件, 遺珠, 每日字數, 常用詞, 目錄 | 標示, 送遺珠 |
  
@@ -80,7 +82,7 @@ The switch at the top of the sidebar picks one of three workspaces, each showing
 - If the open manuscript also belongs to the workspace you switch to (寫作 ↔ 修訂), it stays open where you were.
 - Opening something from another workspace switches automatically, e.g. clicking `今日` in the status bar while in 構思 goes to 寫作.
 - 常用詞 highlighting is shown only in 修訂, so it doesn't distract while drafting.
-- The workspace is saved per browser. No files or formats change: notes are still the flat `筆記` folder.
+- The workspace is saved per browser.
  
 ### Writing
  
@@ -116,6 +118,13 @@ The switch at the top of the sidebar picks one of three workspaces, each showing
 - Create books, manuscripts and notes; rename or delete files.
 - Opening a manuscript or note (including at launch, which reopens the last file) puts the cursor at the very end and scrolls it into view, so you can keep writing immediately.
 - Notes use a plain text area, which also follows 橫排 / 直排.
+- **Note categories** (in 構思): each subfolder of `筆記` is a category, shown as a group in the sidebar. Notes directly in `筆記` (including conflict copies) are listed above the groups.
+  - **＋分類** creates a category. If a book has none yet, the sidebar offers **建立建議分類：大綱・人物・設定**. New books start with these three.
+  - Hover a category for ＋ (new note in it), ✎ (rename) and ✕ (delete, only when it has no notes). Click its name to fold or unfold it; this is remembered.
+  - Move a note by dragging it onto a category, or onto the 筆記 heading to take it out of its category. You can also use ⇄ and type a category name; a new name creates the category.
+  - **Templates**: a note called `範本.md` in a category is that category's template. A new note created there starts with its content, with `{{名稱}}` replaced by the new note's name. The suggested 人物 and 設定 categories come with a template (a character sheet and a worldbuilding entry). Edit or delete them as you like; they're ordinary notes, also editable on the phone.
+  - Categories are ordinary folders, so on the phone (iA Writer, Obsidian, Files) you see and create them the same way. Notes in deeper folders made elsewhere are listed under their top category.
+  - Renaming a category moves its notes into a new folder. If the folder also holds other files or subfolders, rename it in Finder / File Explorer instead.
 - **匯出** downloads the current file; **匯出全書** downloads all manuscripts merged into one `.md`.
 ### 遺珠 (cut paragraphs)
  
@@ -181,7 +190,6 @@ The switch at the top of the sidebar picks one of three workspaces, each showing
 - **Large books**: books are read in full when opened. This is fine for normal novels, but very large books will open more slowly.
 ## Possible next steps (not done)
  
-- 構思: subfolders or types for planning notes (人物, 設定, 大綱), with templates for a character sheet. Needs the file listing, external-change checks and browser storage to handle subfolders, kept readable by Obsidian / iA Writer.
 - 構思: show a note beside the manuscript (side-by-side), including in 直排.
 - Count writing done outside the app (e.g. on the phone) in 每日字數, credited to the day the app next opens.
 - Sync through Dropbox or Google Drive, so the full app works on iPhone in the browser.
@@ -221,3 +229,9 @@ All on 2026-10-15.
     - 專注 (focus mode) in 寫作: the current paragraph stays centred and the others fade out, in 橫排 and 直排. It changes one style rule instead of the manuscript's DOM, so saving, undo and IME are untouched.
     - The sidebar toggle (☰) is unchanged.
     - Tested in Chromium (browser-storage mode): switching and remembering, highlighting only in 修訂, centring in both directions, undo, and 注音-style composition while focus mode is on.
+15. **Note categories.** (2026-11-06)
+    - Subfolders of `筆記` are shown as categories in 構思. You can create, rename, fold and delete them, and drag notes between them (or use ⇄).
+    - `範本.md` in a category is the template for new notes there, with `{{名稱}}` replaced by the note's name. A suggested set 大綱・人物・設定 (with character-sheet and worldbuilding templates) is offered for existing books and created for new ones.
+    - Existing notes stay where they are and need no migration. Manuscripts are unchanged.
+    - Change detection covers notes in subfolders and new categories made elsewhere. Conflict copies still go directly into `筆記`.
+    - Tested in Chromium in browser-storage mode, and in folder mode against an in-memory stand-in for the folder API: create, template, drag, move, rename note and category, delete, fold, edits made elsewhere, and a conflict in a subfolder.
