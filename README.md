@@ -62,9 +62,10 @@ The folder mode does not work on iPhone: iOS browsers don't support the File Sys
 | Paragraph | One line, separated from the next by a blank line |
 | Section break ◇　◇　◇ | `* * *` |
 | Chapter heading | `# 第一章　標題` |
+| 引文 (quote: poem, found text, spell…) | `> 一行` per line, no blank line between lines; `>` alone = gap between stanzas |
  
 - Paragraph indentation is display-only; it is not written into the file.
-- A paragraph that starts with `#`, or looks like a break, is escaped with `\` so it isn't misread.
+- A paragraph that starts with `#` or `>`, or looks like a break, is escaped with `\` so it isn't misread.
 - On load the app also accepts three or more repeats (spaces allowed) of `*`, `-`, `_`, `◇`, `◆`, `＊`, `※`, `☆`, `★`, `○` or `●` as section breaks, and any `#`–`######` heading as a chapter.
 ## Features
  
@@ -98,6 +99,12 @@ The switch at the top of the sidebar picks one of three workspaces, each showing
   - Enter on the empty first line of a manuscript creates a chapter heading directly.
   - Enter inside a chapter title moves to the body.
   - Backspace reverses any of these steps.
+- **引文 (quotes)**: for poems, found text, book quotations, spells and the like.
+  - **Tab** turns the paragraph with the cursor (or every paragraph in the selection) into a quote; Tab again turns it back. **Shift+Tab** always turns it back.
+  - Inside a quote each line is its own line, like verse: 1× Enter starts a new line, 2× Enter leaves a blank line between stanzas, 3× Enter goes back to normal text. Backspace at the start of the first quote line turns it back into a paragraph.
+  - Shown in 楷體 (標楷體 on Mac and Windows), indented, with a faint line beside it; no paragraph indent. Works in 橫排 and 直排.
+  - Saved as a Markdown block quote: `> ` before each line, lines directly under each other, and a lone `>` between stanzas. Obsidian shows the lines as separate lines. Quoted text counts like normal text.
+  - Pasted Markdown keeps its quotes. Two quotes separated only by a blank line in the file are joined into one when the app saves.
 - **橫排 / 直排**: horizontal left-to-right, or vertical right-to-left like a printed book. In 直排 the mouse wheel scrolls sideways.
 - **Toolbar**: 明體 or 黑體, font size, two-character paragraph indent, 專注 (寫作 only), 標示 (常用詞 highlighting on/off, 修訂 only) and 配色.
 - **配色 (themes)**: 跟隨系統 (light or dark with the system), 宣紙, 茶箋 (sepia), 竹青 (green), 霧藍 (blue-grey), 墨夜 (dark), 深海 (dark blue), 純黑 (black).
@@ -172,7 +179,8 @@ The switch at the top of the sidebar picks one of three workspaces, each showing
  
 | Keys | Action |
 |---|---|
-| Enter / ×2 / ×3 | Paragraph / section break / new chapter |
+| Enter / ×2 / ×3 | Paragraph / section break / new chapter (in a quote: line / stanza gap / back to text) |
+| Tab / Shift+Tab | Quote on/off / quote off |
 | Alt+J (⌥J) | Send to 遺珠 |
 | Ctrl/⌘‑1 / 2 / 3 | 構思 / 寫作 / 修訂 workspace |
 | Ctrl/⌘‑Shift‑F | 專注 (focus mode), in 寫作 |
@@ -235,3 +243,8 @@ All on 2026-10-15.
     - Existing notes stay where they are and need no migration. Manuscripts are unchanged.
     - Change detection covers notes in subfolders and new categories made elsewhere. Conflict copies still go directly into `筆記`.
     - Tested in Chromium in browser-storage mode, and in folder mode against an in-memory stand-in for the folder API: create, template, drag, move, rename note and category, delete, fold, edits made elsewhere, and a conflict in a subfolder.
+16. **引文 (quotes).** (2026-11-06) Tab turns paragraphs into a quote for poems, found text, book quotations or spells, saved as Markdown `>` lines.
+    - Enter inside a quote: new line, then a stanza gap, then back to text. Shift+Tab or Backspace at the start turns it back.
+    - Shown in 楷體 with an indent and a faint side line, in both writing directions.
+    - Normal paragraphs that start with `>` are now escaped as `\>`.
+    - Tested in Chromium: Tab and Shift+Tab, the Enter sequence, save/load round trip, escaping, counts, undo, pasting Markdown, and that Tab does nothing during 注音 composition.

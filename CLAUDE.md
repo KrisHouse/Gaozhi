@@ -13,7 +13,7 @@ A local writing app for Traditional Chinese. **The whole app is one file: `gaozh
 
 Users edit the same `.md` files in other apps (Obsidian, iA Writer on iPhone). Don't change these formats without migration and a README update:
 
-- Manuscripts: one paragraph per line, blank line between; `* * *` = section break; `# 第一章　標題` = chapter. Indentation is display-only. Paragraphs starting with `#` or looking like a break are escaped with `\`. Loader also accepts three or more repeats (spaces allowed) of `*`, `-`, `_`, `◇`, `◆`, `＊`, `※`, `☆`, `★`, `○`, `●` as a break, and any `#`–`######` heading as a chapter. The escape set in `escLine`/`unesc` must stay in step with the `BREAK` characters.
+- Manuscripts: one paragraph per line, blank line between; `* * *` = section break; `# 第一章　標題` = chapter. Quotes (引文): each line `> 內容`, consecutive lines with no blank line between, a lone `>` = stanza gap; in the editor they are `p.q`, the only class `normalize()` keeps. Indentation is display-only. Paragraphs starting with `#` or `>` or looking like a break are escaped with `\`. Loader also accepts three or more repeats (spaces allowed) of `*`, `-`, `_`, `◇`, `◆`, `＊`, `※`, `☆`, `★`, `○`, `●` as a break, and any `#`–`######` heading as a chapter. The escape set in `escLine`/`unesc` must stay in step with the `BREAK` characters (plus `#` and `>`).
 - `書名/遺珠.md`: entries headed `## YYYY-MM-DD HH:mm`, then `來源：[稿件 › 章](<稿件/檔名.md>)`, then paragraphs.
 - `書名/.稿紙.json`: daily count history. `寫作資料夾/.稿紙設定.json`: shared 常用詞 list.
 - Conflict copies: `筆記/衝突副本：<名稱>（本機／外部 MMDD-HHmm）.md`.

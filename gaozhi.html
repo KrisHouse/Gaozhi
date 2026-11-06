@@ -14,6 +14,7 @@
   --accent:#9b3b2a; --side:#e9e4d9; --hover:#ddd6c8;
   --serif:"Noto Serif TC","Source Han Serif TC","Songti TC","PMingLiU","MingLiU",serif;
   --sans:"Noto Sans TC","Source Han Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --kai:"BiauKai","標楷體","Kaiti TC","STKaiti","DFKai-SB","TW-Kai",var(--serif);
   --fs:20px; --mark:rgba(232,176,48,.34); color-scheme:light;
 }
 /* ── 配色 ── */
@@ -125,6 +126,10 @@ body.sans .editor,body.sans #notes{font-family:var(--sans)}
 body.noindent .editor p{text-indent:0}
 .editor h1{font-size:1.3em;font-weight:600;letter-spacing:.12em;margin-block:2.4em 1.3em;text-indent:0}
 .editor h1:first-child{margin-block-start:0}
+/* 引文（詩、書中引句、咒語……）：Markdown 的 > 區塊；楷體、整段縮排，前面一條淡線，每行一句 */
+.editor p.q{text-indent:0!important;margin-inline-start:1em;padding-inline-start:2em;border-inline-start:2px solid var(--line);font-family:var(--kai)}
+.editor :not(p.q)+p.q{margin-block-start:.9em}
+.editor p.q+:not(p.q){margin-block-start:.9em}
 .editor .sec{margin-block:1.1em;text-align:center;color:var(--muted);user-select:none;text-indent:0;letter-spacing:0}
 .editor .sec::before{content:"◇　◇　◇"}
 .editor.blank p:first-child::before{content:"開始書寫……（在開頭按 Enter 可先加章名）";color:var(--muted)}
@@ -311,6 +316,7 @@ body.zen .editor>*{opacity:.22}
       <kbd>Enter</kbd> 換段<br>
       連按兩次 <kbd>Enter</kbd>：插入分節符 ◇　◇　◇<br>
       連按三次 <kbd>Enter</kbd>：開新章<br>
+      <kbd>Tab</kbd>：段落變成引文（詩、引句），再按一次變回正文<br>
       在稿件最開頭的空行按 <kbd>Enter</kbd>：直接建立章名<br>
       <kbd>Alt J</kbd>／<kbd>⌥J</kbd>：把段落或選取文字移到遺珠<br>
       <kbd>Ctrl/⌘ 1／2／3</kbd>：切換構思／寫作／修訂工作區<br>
@@ -459,10 +465,14 @@ const HEADING = /^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$/;
 function newP(text) { const p = document.createElement('p'); if (text) p.textContent = text; else p.innerHTML = '<br>'; return p; }
 function makeSec() { const d = document.createElement('div'); d.className = 'sec'; d.contentEditable = 'false'; return d; }
 function makeH(text) { const h = document.createElement('h1'); h.textContent = text; return h; }
-const unesc = l => l.replace(/^(\s*)\\(?=[#*\-_◇◆＊※☆★○●])/, '$1');
+const unesc = l => l.replace(/^(\s*)\\(?=[#>*\-_◇◆＊※☆★○●])/, '$1');
+const QUOTE = /^\s{0,3}>\s?/;                    // 引文行：> 內容；只有 > 的空行是詩的分段
+const isQ = el => !!el && el.tagName === 'P' && el.classList.contains('q');
+function newQ(text) { const p = newP(text); p.className = 'q'; return p; }
 
 function lineBlock(line) {
   if (line.trim() === '') return null;
+  if (QUOTE.test(line)) return newQ(unesc(line.replace(QUOTE, '')));
   const m = line.match(HEADING);
   if (m) return makeH(m[1]);
   if (BREAK.test(line)) return makeSec();
@@ -473,21 +483,30 @@ function load(md) {
   for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) { const b = lineBlock(ln); if (b) editor.append(b); }
   normalize();
 }
-function escLine(t) { return (/^\s*#/.test(t) || BREAK.test(t)) ? t.replace(/^(\s*)/, '$1\\') : t; }
+function escLine(t) { return (/^\s*[#>]/.test(t) || BREAK.test(t)) ? t.replace(/^(\s*)/, '$1\\') : t; }
 function serialize() {
-  const out = [];
+  const out = []; let q = null;                   // q：正在累積的引文區塊（各行之間只換一行）
+  const endQ = () => { if (!q) return; while (q.length && q[q.length - 1] === '>') q.pop(); if (q.length) out.push(q.join('\n')); q = null; };
   for (const el of editor.children) {
+    if (isQ(el)) {
+      const t = el.textContent;
+      if (t.trim()) (q ??= []).push('> ' + escLine(t));
+      else if (q?.length && q[q.length - 1] !== '>') q.push('>');
+      continue;
+    }
+    endQ();
     if (el.tagName === 'H1') out.push('# ' + (el.textContent.trim() || '未命名章節'));
     else if (el.classList.contains('sec')) { if (out.length && out[out.length - 1] !== '* * *') out.push('* * *'); }
     else { const t = el.textContent; if (t.trim()) out.push(escLine(t)); }
   }
+  endQ();
   return out.join('\n\n') + '\n';
 }
 function countMd(md) {
   let all = 0, np = 0;
   for (const ln of md.replace(/\r\n?/g, '\n').split('\n')) {
     if (!ln.trim() || HEADING.test(ln) || BREAK.test(ln)) continue;
-    const c = count(unesc(ln)); all += c.all; np += c.np;
+    const c = count(unesc(ln.replace(QUOTE, ''))); all += c.all; np += c.np;
   }
   return { all, np };
 }
@@ -524,7 +543,7 @@ function setCaret(c) {
 }
 function revealCaret() { const b = currentBlock(); b?.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
 
-/* 保持結構乾淨：只允許 p / h1 / div.sec */
+/* 保持結構乾淨：只允許 p（含引文 p.q）/ h1 / div.sec */
 function fixEmpty(el) {
   if (el.textContent !== '') el.querySelectorAll('br').forEach(br => br.remove());
   else if (!el.querySelector('br')) el.innerHTML = '<br>';
@@ -549,7 +568,9 @@ function normalize() {
       const p = document.createElement('p'); n.before(p); while (n.firstChild) p.append(n.firstChild); n.remove();
       flatten(p); fixEmpty(p); touched = true; continue;
     }
-    if (n.attributes.length) { [...n.attributes].forEach(a => n.removeAttribute(a.name)); }
+    const q = isQ(n);                              // 引文只保留 class="q"
+    for (const a of [...n.attributes]) if (!(q && a.name === 'class')) n.removeAttribute(a.name);
+    if (q && n.className !== 'q') n.className = 'q';
     if (flatten(n)) touched = true;
     if (n.tagName === 'P' && n.textContent === '' && !n.querySelector('br')) n.innerHTML = '<br>';
   }
@@ -596,7 +617,7 @@ function splitBlock(b) {
   const r = getSelection().getRangeAt(0);
   const tail = document.createRange(); tail.setStart(r.endContainer, r.endOffset); tail.setEnd(b, b.childNodes.length);
   const frag = tail.extractContents();
-  const p = document.createElement('p'); p.append(frag); flatten(p);
+  const p = document.createElement('p'); if (isQ(b)) p.className = 'q'; p.append(frag); flatten(p);
   fixEmpty(p); fixEmpty(b); b.after(p); placeCaret(p, false);
 }
 function onEnter() {
@@ -610,6 +631,15 @@ function onEnter() {
     placeCaret(n, false); afterStruct(); return;
   }
   if (b.tagName !== 'P') return;
+
+  if (isQ(b)) {                                    // 引文：一次換行、兩次分段（空一行）、三次回到正文
+    if (b.textContent !== '') { splitBlock(b); afterStruct(); return; }
+    const prev = b.previousElementSibling;
+    if (isQ(prev) && prev.textContent === '') { prev.remove(); b.classList.remove('q'); }
+    else if (!isQ(prev)) b.classList.remove('q');
+    else { const n = newQ(); b.after(n); placeCaret(n, false); }
+    afterStruct(); return;
+  }
 
   if (b.textContent === '') {
     const prev = b.previousElementSibling;
@@ -635,6 +665,7 @@ function onBackspace() {
   const c = getCaret(); if (!c || c.off !== 0) return false;
   const prev = b.previousElementSibling;
   if (b.tagName === 'H1') { const p = newP(b.textContent); b.replaceWith(p); placeCaret(p, false); afterStruct(); return true; }
+  if (isQ(b) && !isQ(prev)) { b.classList.remove('q'); afterStruct(); return true; }   // 引文第一行開頭：變回正文
   if (prev && prev.classList.contains('sec')) { prev.remove(); afterStruct(); return true; }
   if (prev && prev.tagName === 'H1') { if (b.textContent === '' && b.nextElementSibling) b.remove(); placeCaret(prev, true); afterStruct(); return true; }
   if (!prev) return true;
@@ -677,7 +708,23 @@ editor.addEventListener('keydown', e => {
   else if (mod && k === 'y') { e.preventDefault(); redo(); }
   else if (mod && ['b', 'i', 'u'].includes(k)) e.preventDefault();
   else if (e.altKey && !mod && e.code === 'KeyJ') { e.preventDefault(); sendToGems(); }
+  else if (e.key === 'Tab' && !mod && !e.altKey) {
+    e.preventDefault();
+    if (e.isComposing || composing || e.keyCode === 229) return;   // 選字中不動
+    toggleQuote(e.shiftKey ? false : null);
+  }
 });
+// Tab：把游標所在段落（或選取範圍內的段落）變成引文，再按一次變回正文；Shift+Tab 一定變回正文
+function toggleQuote(on) {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return;
+  const r = s.getRangeAt(0);
+  let ps = r.collapsed ? [currentBlock()] : [...editor.children].filter(el => r.intersectsNode(el));
+  ps = ps.filter(el => el && el.tagName === 'P');
+  if (!ps.length) return;
+  if (on === null) on = !ps.every(isQ);
+  for (const p of ps) p.classList.toggle('q', on);
+  afterStruct();
+}
 editor.addEventListener('input', () => { if (composing) { changed(); return; } normalize(); snap(); changed(); });
 editor.addEventListener('paste', e => { e.preventDefault(); insertPlain(e.clipboardData.getData('text/plain') || ''); });
 editor.addEventListener('drop', e => e.preventDefault());
@@ -1530,7 +1577,7 @@ async function bookLines() {
   const out = [];
   for (const f of state.msFiles) {
     let t = ''; try { t = await state.store.read(state.book, 'ms', f); } catch {}
-    for (const l of t.replace(/\r\n?/g, '\n').split('\n')) if (l.trim() && !HEADING.test(l) && !BREAK.test(l)) out.push(unesc(l));
+    for (const l of t.replace(/\r\n?/g, '\n').split('\n')) if (l.trim() && !HEADING.test(l) && !BREAK.test(l)) out.push(unesc(l.replace(QUOTE, '')));
   }
   return out;
 }
